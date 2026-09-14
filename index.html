@@ -385,10 +385,7 @@
             </svg>
             Masuk dengan Google
           </button>
-          <div class="text-center mt-3">
-            <button id="previewBtn" class="text-button" type="button">Lihat pratinjau aplikasi</button>
-          </div>
-          <p class="login-note">Login Google wajib digunakan pada versi sebenarnya. Pratinjau hanya untuk melihat tampilan aplikasi.</p>
+          <p class="login-note">Login hanya bisa dilakukan melalui Web App Google Apps Script dengan akun Google.</p>
         </div>
       </div>
     </div>
@@ -453,10 +450,10 @@
           <small>Hubungi Admin jika ada masalah pada pengajuan.</small>
         </div>
         <div class="sidebar-user">
-          <div id="sideAvatar" class="avatar">FD</div>
+          <div id="sideAvatar" class="avatar">-</div>
           <div>
-            <strong id="sideUserName">Fitri Demo</strong>
-            <small id="sideUserRole">Pengguna</small>
+            <strong id="sideUserName">Memuat akun...</strong>
+            <small id="sideUserRole">-</small>
           </div>
           <button id="logoutBtn" class="btn btn-sm ms-auto p-0 text-secondary" title="Keluar"><i class="bi bi-box-arrow-right"></i></button>
         </div>
@@ -470,7 +467,7 @@
           <p id="pageSubtitle">Ringkasan aktivitas peminjaman ruangan.</p>
         </div>
         <div class="top-actions">
-          <span class="sync-text d-none d-md-inline"><span class="sync-dot"></span><span id="syncText">Mode pratinjau</span></span>
+          <span class="sync-text d-none d-md-inline"><span class="sync-dot"></span><span id="syncText">Menunggu sinkronisasi</span></span>
           <div class="position-relative">
             <button id="notificationBtn" class="icon-btn" type="button" aria-label="Notifikasi">
               <i class="bi bi-bell"></i><span id="notificationBadge" class="notification-badge">0</span>
@@ -481,18 +478,15 @@
             </div>
           </div>
           <button class="profile-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <div id="topAvatar" class="avatar">FD</div>
+            <div id="topAvatar" class="avatar">-</div>
             <div class="profile-text">
-              <strong id="topUserName">Fitri Demo</strong>
-              <small id="topUserRole">Pengguna</small>
+              <strong id="topUserName">Memuat akun...</strong>
+              <small id="topUserRole">-</small>
             </div>
             <i class="bi bi-chevron-down text-secondary ms-1"></i>
           </button>
           <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm mt-2">
-            <li><h6 class="dropdown-header">Mode pratinjau</h6></li>
-            <li><button class="dropdown-item small" type="button" data-demo-role="Pengguna">Lihat sebagai Pengguna</button></li>
-            <li><button class="dropdown-item small" type="button" data-demo-role="Penyetuju">Lihat sebagai Penyetuju</button></li>
-            <li><button class="dropdown-item small" type="button" data-demo-role="Admin">Lihat sebagai Admin</button></li>
+            <li><span class="dropdown-item-text small text-secondary">Akun aktif berdasarkan Google Sheet</span></li>
             <li><hr class="dropdown-divider"></li>
             <li><button id="dropdownLogoutBtn" class="dropdown-item small text-danger" type="button"><i class="bi bi-box-arrow-right me-2"></i>Keluar</button></li>
           </ul>
@@ -559,7 +553,7 @@
                 <div class="col-md-6"><label class="form-label" for="bookingDate">Tanggal</label><input id="bookingDate" class="form-control" type="date" required></div>
                 <div class="col-md-3"><label class="form-label" for="bookingStart">Waktu mulai</label><input id="bookingStart" class="form-control" type="time" required></div>
                 <div class="col-md-3"><label class="form-label" for="bookingEnd">Waktu selesai</label><input id="bookingEnd" class="form-control" type="time" required></div>
-                <div class="col-md-6"><label class="form-label" for="bookingApprover">Penyetuju</label><select id="bookingApprover" class="form-select" required><option value="">Pilih penyetuju</option><option value="penyetuju1@contoh.com|Siti Rahma">Siti Rahma</option><option value="penyetuju2@contoh.com|Andi Saputra">Andi Saputra</option></select></div>
+                <div id="bookingApproverGroup" class="col-md-6"><label class="form-label" for="bookingApprover">Penyetuju</label><select id="bookingApprover" class="form-select" required><option value="">Pilih penyetuju</option></select></div>
                 <div class="col-md-6"><label class="form-label" for="bookingParticipants">Jumlah peserta</label><input id="bookingParticipants" class="form-control" type="number" min="1" placeholder="Contoh: 12" required></div>
                 <div class="col-12"><label class="form-label" for="bookingPurpose">Tujuan kegiatan</label><textarea id="bookingPurpose" class="form-control" rows="3" placeholder="Jelaskan keperluan peminjaman ruangan..." required></textarea></div>
               </div>
@@ -634,32 +628,15 @@
     const initials = (name) => String(name || "User").split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join("").toUpperCase();
 
     const state = {
-      role: "Pengguna",
+      role: "",
       currentPage: "dashboard",
       calendarMonth: new Date(today.getFullYear(), today.getMonth(), 1),
-      user: { email: "fitri@contoh.com", name: "Fitri Demo", dept: "Human Capital", status: "Aktif" },
-      rooms: [
-        { id: "R002", name: "Ruang Business Sense", status: "Aktif", desc: "Ruang nyaman untuk diskusi dan rapat kecil.", type: "green", capacity: 12 },
-        { id: "R003", name: "Ruang Excellent Services", status: "Aktif", desc: "Ruang rapat dengan suasana tenang dan profesional.", type: "orange", capacity: 16 },
-        { id: "R004", name: "Ruang MEETING LT.2 (EX FIF)", status: "Aktif", desc: "Ruangan luas untuk rapat lintas departemen.", type: "blue", capacity: 30 },
-        { id: "R005", name: "LANTAI 2 HEPS", status: "Aktif", desc: "Area pertemuan untuk kegiatan internal tim.", type: "pink", capacity: 24 },
-        { id: "R006", name: "STUDIO PHOTO AMCJ", status: "Aktif", desc: "Studio untuk kebutuhan foto dan produksi konten.", type: "purple", capacity: 10 }
-      ],
-      bookings: [
-        { id: "PMJ-001", email: "fitri@contoh.com", name: "Fitri Demo", roomId: "R003", roomName: "Ruang Excellent Services", date: dateKey(addDays(1)), start: "09:00", end: "11:00", purpose: "Rapat koordinasi mingguan", participants: 10, approver: "Siti Rahma", approverEmail: "penyetuju1@contoh.com", status: "Disetujui", note: "", submitted: dateKey(today) },
-        { id: "PMJ-002", email: "fitri@contoh.com", name: "Fitri Demo", roomId: "R002", roomName: "Ruang Business Sense", date: dateKey(addDays(4)), start: "13:00", end: "15:00", purpose: "Diskusi program kerja", participants: 8, approver: "Andi Saputra", approverEmail: "penyetuju2@contoh.com", status: "Menunggu", note: "", submitted: dateKey(today) },
-        { id: "PMJ-003", email: "budi@contoh.com", name: "Budi Santoso", roomId: "R004", roomName: "Ruang MEETING LT.2 (EX FIF)", date: dateKey(addDays(2)), start: "10:00", end: "12:00", purpose: "Presentasi departemen", participants: 22, approver: "Siti Rahma", approverEmail: "penyetuju1@contoh.com", status: "Menunggu", note: "", submitted: dateKey(today) }
-      ],
-      notifications: [
-        { icon: "bi-calendar2-check", text: "Peminjaman R003 kamu sudah disetujui.", time: "Hari ini", read: false },
-        { icon: "bi-info-circle", text: "Jangan lupa hadir 10 menit sebelum rapat.", time: "Kemarin", read: false },
-        { icon: "bi-megaphone", text: "Sistem peminjaman siap digunakan.", time: "2 hari lalu", read: true }
-      ],
-      activities: [
-        { type: "green", icon: "bi-check-circle", text: "Peminjaman R003 disetujui oleh Siti Rahma.", time: "Hari ini, 08:42" },
-        { type: "orange", icon: "bi-hourglass-split", text: "Peminjaman R002 sedang menunggu persetujuan.", time: "Hari ini, 08:16" },
-        { type: "", icon: "bi-door-open", text: "5 ruangan aktif dan siap digunakan.", time: "Kemarin" }
-      ]
+      user: { email: "", name: "", dept: "", role: "", status: "" },
+      rooms: [],
+      bookings: [],
+      notifications: [],
+      activities: [],
+      users: []
     };
 
     const roleMenus = {
@@ -704,7 +681,7 @@
     }
 
     function isAllowed(page) {
-      return roleMenus[state.role].some((item) => item.page === page) || ["registration", "pending"].includes(page);
+      return (roleMenus[state.role] || []).some((item) => item.page === page) || ["registration", "pending"].includes(page);
     }
 
     function setPage(page) {
@@ -730,7 +707,7 @@
     }
 
     function renderNav() {
-      const items = roleMenus[state.role];
+      const items = roleMenus[state.role] || [];
       const sideNav = document.getElementById("sideNav");
       const mobileNav = document.getElementById("mobileNav");
       sideNav.innerHTML = items.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + '</span>' + (item.page === "approvals" && state.role !== "Pengguna" ? '<span class="badge rounded-pill text-bg-danger ms-auto">2</span>' : "") + "</button>").join("");
@@ -766,7 +743,9 @@
       document.getElementById("statBookings").textContent = mine.length;
       document.getElementById("statPending").textContent = mine.filter((booking) => booking.status === "Menunggu").length;
       document.getElementById("statApproved").textContent = mine.filter((booking) => booking.status === "Disetujui").length;
-      document.getElementById("activityList").innerHTML = state.activities.map((activity) => '<div class="activity"><div class="activity-icon ' + activity.type + '"><i class="bi ' + activity.icon + '"></i></div><div><p>' + escapeHTML(activity.text) + '</p><time>' + escapeHTML(activity.time) + "</time></div></div>").join("");
+      document.getElementById("activityList").innerHTML = state.activities.length
+        ? state.activities.map((activity) => '<div class="activity"><div class="activity-icon ' + activity.type + '"><i class="bi ' + activity.icon + '"></i></div><div><p>' + escapeHTML(activity.text) + '</p><time>' + escapeHTML(activity.time) + "</time></div></div>").join("")
+        : '<div class="empty-state py-4"><i class="bi bi-clock-history"></i><p>Belum ada aktivitas.</p></div>';
       renderCalendar();
     }
 
@@ -801,7 +780,7 @@
         const statusMatches = selectedStatus === "all" || (selectedStatus === "Aktif" ? isRoomAvailable(room.status) : room.status === selectedStatus);
         return statusMatches && (room.name.toLowerCase().includes(query) || room.id.toLowerCase().includes(query));
       });
-      document.getElementById("roomGrid").innerHTML = filtered.length ? filtered.map((room) => '<div class="col-md-6 col-xl-4"><div class="card-soft room-card"><div class="room-cover ' + room.type + '"><span class="room-status">' + (isRoomAvailable(room.status) ? "Tersedia" : "Nonaktif") + '</span><div class="room-illustration"><i class="bi bi-door-open"></i></div></div><div class="room-body"><h3>' + escapeHTML(room.name) + '</h3><p>' + escapeHTML(room.desc) + '</p><div class="room-meta"><span><i class="bi bi-people"></i> Maks. ' + room.capacity + " orang</span>" + (room.status === "Aktif" ? '<button class="btn btn-brand py-2 px-3" type="button" data-book-room="' + room.id + '">Pilih</button>' : '<span class="status-pill status-inactive">Tidak aktif</span>') + "</div></div></div></div>").join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-search"></i><p>Ruangan yang dicari belum ditemukan.</p></div></div>';
+      document.getElementById("roomGrid").innerHTML = filtered.length ? filtered.map((room) => '<div class="col-md-6 col-xl-4"><div class="card-soft room-card"><div class="room-cover ' + room.type + '"><span class="room-status">' + (isRoomAvailable(room.status) ? "Tersedia" : "Nonaktif") + '</span><div class="room-illustration"><i class="bi bi-door-open"></i></div></div><div class="room-body"><h3>' + escapeHTML(room.name) + '</h3><p>' + escapeHTML(room.desc) + '</p><div class="room-meta"><span><i class="bi bi-people"></i> Maks. ' + room.capacity + " orang</span>" + (isRoomAvailable(room.status) ? '<button class="btn btn-brand py-2 px-3" type="button" data-book-room="' + room.id + '">Pilih</button>' : '<span class="status-pill status-inactive">Tidak aktif</span>') + "</div></div></div></div>").join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-search"></i><p>Ruangan yang dicari belum ditemukan.</p></div></div>';
       document.querySelectorAll("[data-book-room]").forEach((button) => button.addEventListener("click", () => {
         document.getElementById("bookingRoomId").dataset.roomId = button.dataset.bookRoom;
         setPage("booking");
@@ -810,6 +789,13 @@
 
     function prepareBookingForm() {
       updateUserUI();
+      const approverGroup = document.getElementById("bookingApproverGroup");
+      const approverSelect = document.getElementById("bookingApprover");
+      const needsApprover = state.role !== "Admin";
+      if (approverGroup && approverSelect) {
+        approverGroup.classList.toggle("d-none", !needsApprover);
+        approverSelect.required = needsApprover;
+      }
       const selectedId = document.getElementById("bookingRoomId").dataset.roomId;
       const room = state.rooms.find((item) => item.id === selectedId) || state.rooms.find((item) => isRoomAvailable(item.status));
       if (room) {
@@ -867,14 +853,13 @@
     }
 
     function renderAdmin() {
-      const users = Array.isArray(state.users) && state.users.length ? state.users : [
-        { name: "Fitri Demo", email: "fitri@contoh.com", dept: "Human Capital", role: "Pengguna", status: "Aktif" },
-        { name: "Siti Rahma", email: "penyetuju1@contoh.com", dept: "Operasional", role: "Penyetuju", status: "Aktif" },
-        { name: "Andi Saputra", email: "penyetuju2@contoh.com", dept: "Finance", role: "Penyetuju", status: "Aktif" },
-        { name: "Rina Wijaya", email: "rina@contoh.com", dept: "Marketing", role: "Pengguna", status: "Menunggu" }
-      ];
-      document.getElementById("usersTable").innerHTML = users.map((user) => '<tr><td><strong>' + escapeHTML(user.name) + '</strong></td><td>' + escapeHTML(user.email) + '</td><td>' + escapeHTML(user.dept) + '</td><td>' + escapeHTML(user.role) + '</td><td><span class="status-pill ' + statusClass(user.status) + '">' + escapeHTML(user.status) + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-action="' + user.email + '"><i class="bi bi-three-dots"></i></button></td></tr>').join("");
-      document.getElementById("adminRoomsTable").innerHTML = state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + statusClass(room.status) + '">' + (room.status === "Aktif" ? "Aktif" : "Nonaktif") + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '"><i class="bi bi-pencil"></i></button></td></tr>').join("");
+      const users = Array.isArray(state.users) ? state.users : [];
+      document.getElementById("usersTable").innerHTML = users.length
+        ? users.map((user) => '<tr><td><strong>' + escapeHTML(user.name) + '</strong></td><td>' + escapeHTML(user.email) + '</td><td>' + escapeHTML(user.dept) + '</td><td>' + escapeHTML(user.role) + '</td><td><span class="status-pill ' + statusClass(user.status) + '">' + escapeHTML(user.status) + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-action="' + user.email + '"><i class="bi bi-three-dots"></i></button></td></tr>').join("")
+        : '<tr><td colspan="6"><div class="empty-state py-3"><p>Belum ada data pengguna.</p></div></td></tr>';
+      document.getElementById("adminRoomsTable").innerHTML = state.rooms.length
+        ? state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + statusClass(room.status) + '">' + (isRoomAvailable(room.status) ? "Aktif" : "Nonaktif") + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '"><i class="bi bi-pencil"></i></button></td></tr>').join("")
+        : '<tr><td colspan="5"><div class="empty-state py-3"><p>Belum ada data ruangan.</p></div></td></tr>';
       document.getElementById("allBookingsTable").innerHTML = state.bookings.map((booking) => bookingRow(booking, true)).join("");
       bindBookingViewButtons();
       document.querySelectorAll("[data-admin-action], [data-admin-room]").forEach((button) => button.addEventListener("click", () => showToast("Fungsi pengelolaan akan terhubung ke Google Sheet pada tahap berikutnya.", "Panel Admin", "info")));
@@ -968,6 +953,18 @@
       };
     }
 
+    function renderApprovers(approvers) {
+      const select = document.getElementById("bookingApprover");
+      if (!select) return;
+      const list = Array.isArray(approvers) ? approvers : [];
+      select.innerHTML = '<option value="">Pilih penyetuju</option>' + list.map(function(user) {
+        return '<option value="' + escapeHTML(user.Email) + '|' + escapeHTML(user.Nama) + '">' + escapeHTML(user.Nama) + '</option>';
+      }).join("");
+      if (!list.length) {
+        select.innerHTML = '<option value="">Belum ada penyetuju aktif</option>';
+      }
+    }
+
     function showLiveRegistration(email) {
       document.getElementById("loginView").classList.add("d-none-important");
       document.getElementById("appShell").classList.add("d-none-important");
@@ -999,9 +996,10 @@
         return;
       }
 
-      state.rooms = Array.isArray(data.rooms) ? data.rooms.map(mapLiveRoom) : state.rooms;
+      state.rooms = Array.isArray(data.rooms) ? data.rooms.map(mapLiveRoom) : [];
       state.bookings = Array.isArray(data.bookings) ? data.bookings.map(mapLiveBooking) : [];
       state.notifications = Array.isArray(data.notifications) ? data.notifications : [];
+      renderApprovers(data.approvers || []);
       if (Array.isArray(data.users)) {
         state.users = data.users.map(function(user) {
           return {
@@ -1042,26 +1040,10 @@
         }
         return;
       }
-      if (!CONFIG.API_URL) {
-        syncText.textContent = "Mode pratinjau";
-        return;
-      }
-      syncText.textContent = "Menyinkronkan...";
-      try {
-        const response = await fetch(CONFIG.API_URL + "?action=bootstrap", { method: "GET" });
-        if (!response.ok) throw new Error("Gagal mengambil data");
-        const data = await response.json();
-        if (Array.isArray(data.rooms)) state.rooms = data.rooms;
-        if (Array.isArray(data.bookings)) state.bookings = data.bookings;
-        syncText.textContent = "Tersinkron " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
-        renderAll();
-      } catch (error) {
-        syncText.textContent = "Sinkronisasi gagal";
-        showToast("Data terbaru belum dapat diambil. Periksa alamat penghubung.", "Koneksi belum siap", "warning");
-      }
+      syncText.textContent = "Buka melalui Web App Apps Script";
     }
 
-    function enterApp(role = "Pengguna") {
+    function enterApp(role) {
       state.role = role;
       document.getElementById("loginView").classList.add("d-none-important");
       document.getElementById("registrationView").classList.add("d-none-important");
@@ -1083,11 +1065,6 @@
         event.preventDefault();
         setPage(pageButton.dataset.page);
       }
-      const demoRoleButton = event.target.closest("[data-demo-role]");
-      if (demoRoleButton) {
-        enterApp(demoRoleButton.dataset.demoRole);
-        showToast("Tampilan diubah ke mode " + demoRoleButton.dataset.demoRole + ".", "Pratinjau", "info");
-      }
     });
 
     document.getElementById("googleLoginBtn").addEventListener("click", () => {
@@ -1095,13 +1072,8 @@
         loadLiveSession();
         return;
       }
-      if (!CONFIG.API_URL) {
-        showToast("Google Sign-In akan aktif saat aplikasi dibuka melalui Google Apps Script.", "Tahap berikutnya", "info");
-        return;
-      }
-      showToast("Memulai login Google...", "Login", "info");
+      showToast("Buka aplikasi melalui Web App Google Apps Script untuk login Google.", "Login Google", "info");
     });
-    document.getElementById("previewBtn").addEventListener("click", () => enterApp("Pengguna"));
     document.getElementById("backToLoginBtn").addEventListener("click", () => {
       document.getElementById("registrationView").classList.add("d-none-important");
       document.getElementById("loginView").classList.remove("d-none-important");
@@ -1162,11 +1134,7 @@
         });
         return;
       }
-      document.getElementById("registrationView").classList.add("d-none-important");
-      document.getElementById("appShell").classList.remove("d-none-important");
-      if (role === "Pengguna") enterApp("Pengguna");
-      else setPage("pending");
-      showToast(role === "Pengguna" ? "Akun Pengguna langsung aktif." : "Pendaftaran dikirim dan menunggu Admin.", "Pendaftaran diterima", role === "Pengguna" ? "success" : "info");
+      showToast("Pendaftaran hanya dapat dilakukan melalui Web App Google Apps Script.", "Pendaftaran", "info");
     });
     document.getElementById("bookingForm").addEventListener("submit", (event) => {
       event.preventDefault();
@@ -1189,11 +1157,11 @@
         showToast("Waktu selesai harus lebih besar dari waktu mulai.", "Waktu tidak valid", "warning");
         return;
       }
-      if (!approverValue) {
+      if (state.role !== "Admin" && !approverValue) {
         showToast("Pilih salah satu penyetuju.", "Penyetuju belum dipilih", "warning");
         return;
       }
-      const approverParts = approverValue.split("|");
+      const approverParts = approverValue ? approverValue.split("|") : ["", ""];
       if (isAppsScriptPage()) {
         const submitButton = event.target.querySelector('button[type="submit"]');
         submitButton.disabled = true;
