@@ -1,35 +1,33 @@
 # Peminjaman Ruangan
 
-Aplikasi peminjaman ruangan dengan tampilan Bootstrap 5 dan Google Sheets sebagai database.
+Aplikasi peminjaman ruangan berbasis Google Apps Script dengan Google Sheets sebagai database dan notifikasi di dalam aplikasi.
 
 ## File
 
-- \`index.html\` — tampilan aplikasi dan mode pratinjau.
-- \`Code.gs\` — penghubung Google Apps Script ke 3 tab Google Sheets.
+- `index.html` — tampilan aplikasi live dengan Bootstrap 5.
+- `Code.gs` — penghubung aplikasi ke 3 tab Google Sheets.
 
 ## Struktur Google Sheets
 
-Nama tab harus persis:
+Nama tab dan urutan kolom harus persis:
 
-1. \`Pengguna\`
-2. \`Ruangan\`
-3. \`Peminjaman\`
+1. `Pengguna`: Email | Nama | Role | Status | TanggalDaftar | Dept
+2. `Ruangan`: ID | NamaRuangan | Status | Deskripsi
+3. `Peminjaman`: ID | EmailPeminjam | NamaPeminjam | IDRuangan | NamaRuangan | Tanggal | WaktuMulai | WaktuSelesai | Tujuan | JumlahPeserta | PenyetujuEmail | PenyetujuNama | Status | CatatanPenyetuju | TanggalPengajuan
 
-Header dan urutan kolom mengikuti rancangan aplikasi.
+## Cara memasang
 
-## Memasang penghubung Google Sheets
-
-1. Buka file Google Sheets.
-2. Pilih **Ekstensi → Apps Script**.
-3. Buat file kode bernama \`Code.gs\`, lalu salin isi file \`Code.gs\` dari repository ini.
-4. Ganti nilai \`SPREADSHEET_ID\` dengan ID Google Sheets milik kamu.
-5. Buat file HTML bernama \`index\`, lalu salin isi \`index.html\`.
-6. Jalankan fungsi \`setupDatabase\` satu kali untuk memeriksa tab dan mengisi ruangan R002–R006 jika tab Ruangan masih kosong.
-7. Pilih **Deploy → New deployment → Web app**.
+1. Buka Google Sheets, lalu pilih **Ekstensi → Apps Script**.
+2. Salin isi `Code.gs` dari repository ini ke file `Code.gs`.
+3. Salin isi `index.html` ke file HTML bernama `index`.
+4. Pastikan `SPREADSHEET_ID` berisi ID Google Sheets yang benar.
+5. Jalankan fungsi `setupDatabase` satu kali.
+6. Pilih **Deploy → New deployment → Web app**.
+7. Untuk login Google, buka URL Web App Apps Script, bukan halaman GitHub.
 
 ## Catatan
 
-- Jangan menghapus atau mengubah nama kolom.
-- Jangan menaruh password atau token di repository.
-- Google Sign-In, data live, dan deployment akan diaktifkan setelah penghubung Apps Script selesai dipasang.
-- Setiap perubahan kode perlu dibuat sebagai deployment baru.
+- Aplikasi tidak memakai data contoh dan tidak mengirim email.
+- Pengguna baru masuk lewat Google Sign-In; email menjadi identitas tetap.
+- Pengguna langsung aktif. Penyetuju dan Admin menunggu persetujuan Admin.
+- Setiap perubahan kode harus disimpan sebagai **versi deployment baru**.
