@@ -752,13 +752,17 @@
       document.getElementById("bookingEmail").value = state.user.email;
     }
 
+    function isRoomAvailable(status) {
+      return ["aktif", "tersedia", "available"].includes(String(status || "").trim().toLowerCase());
+    }
+
     function statusClass(status) {
-      return ({ "Aktif": "status-active", "Disetujui": "status-approved", "Menunggu": "status-pending", "Ditolak": "status-rejected", "Nonaktif": "status-inactive" }[status] || "status-inactive");
+      return ({ "Aktif": "status-active", "Tersedia": "status-active", "Disetujui": "status-approved", "Menunggu": "status-pending", "Ditolak": "status-rejected", "Nonaktif": "status-inactive" }[status] || "status-inactive");
     }
 
     function renderDashboard() {
       const mine = state.bookings.filter((booking) => booking.email === state.user.email);
-      document.getElementById("statRooms").textContent = state.rooms.filter((room) => room.status === "Aktif").length;
+      document.getElementById("statRooms").textContent = state.rooms.filter((room) => isRoomAvailable(room.status)).length;
       document.getElementById("statBookings").textContent = mine.length;
       document.getElementById("statPending").textContent = mine.filter((booking) => booking.status === "Menunggu").length;
       document.getElementById("statApproved").textContent = mine.filter((booking) => booking.status === "Disetujui").length;
@@ -793,8 +797,11 @@
     function renderRooms() {
       const query = (document.getElementById("roomSearch").value || "").toLowerCase();
       const selectedStatus = document.getElementById("roomStatusFilter").value;
-      const filtered = state.rooms.filter((room) => (selectedStatus === "all" || room.status === selectedStatus) && (room.name.toLowerCase().includes(query) || room.id.toLowerCase().includes(query)));
-      document.getElementById("roomGrid").innerHTML = filtered.length ? filtered.map((room) => '<div class="col-md-6 col-xl-4"><div class="card-soft room-card"><div class="room-cover ' + room.type + '"><span class="room-status">' + (room.status === "Aktif" ? "Tersedia" : "Nonaktif") + '</span><div class="room-illustration"><i class="bi bi-door-open"></i></div></div><div class="room-body"><h3>' + escapeHTML(room.name) + '</h3><p>' + escapeHTML(room.desc) + '</p><div class="room-meta"><span><i class="bi bi-people"></i> Maks. ' + room.capacity + " orang</span>" + (room.status === "Aktif" ? '<button class="btn btn-brand py-2 px-3" type="button" data-book-room="' + room.id + '">Pilih</button>' : '<span class="status-pill status-inactive">Tidak aktif</span>') + "</div></div></div></div>").join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-search"></i><p>Ruangan yang dicari belum ditemukan.</p></div></div>';
+      const filtered = state.rooms.filter((room) => {
+        const statusMatches = selectedStatus === "all" || (selectedStatus === "Aktif" ? isRoomAvailable(room.status) : room.status === selectedStatus);
+        return statusMatches && (room.name.toLowerCase().includes(query) || room.id.toLowerCase().includes(query));
+      });
+      document.getElementById("roomGrid").innerHTML = filtered.length ? filtered.map((room) => '<div class="col-md-6 col-xl-4"><div class="card-soft room-card"><div class="room-cover ' + room.type + '"><span class="room-status">' + (isRoomAvailable(room.status) ? "Tersedia" : "Nonaktif") + '</span><div class="room-illustration"><i class="bi bi-door-open"></i></div></div><div class="room-body"><h3>' + escapeHTML(room.name) + '</h3><p>' + escapeHTML(room.desc) + '</p><div class="room-meta"><span><i class="bi bi-people"></i> Maks. ' + room.capacity + " orang</span>" + (room.status === "Aktif" ? '<button class="btn btn-brand py-2 px-3" type="button" data-book-room="' + room.id + '">Pilih</button>' : '<span class="status-pill status-inactive">Tidak aktif</span>') + "</div></div></div></div>").join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-search"></i><p>Ruangan yang dicari belum ditemukan.</p></div></div>';
       document.querySelectorAll("[data-book-room]").forEach((button) => button.addEventListener("click", () => {
         document.getElementById("bookingRoomId").dataset.roomId = button.dataset.bookRoom;
         setPage("booking");
@@ -804,7 +811,7 @@
     function prepareBookingForm() {
       updateUserUI();
       const selectedId = document.getElementById("bookingRoomId").dataset.roomId;
-      const room = state.rooms.find((item) => item.id === selectedId) || state.rooms.find((item) => item.status === "Aktif");
+      const room = state.rooms.find((item) => item.id === selectedId) || state.rooms.find((item) => isRoomAvailable(item.status));
       if (room) {
         document.getElementById("bookingRoomId").dataset.roomId = room.id;
         document.getElementById("bookingRoomName").textContent = room.name;
