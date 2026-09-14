@@ -97,6 +97,10 @@ function getBootstrap() {
   const user = findUserByEmail_(email);
   const rooms = readRooms_();
 
+  const approvers = readUsers_().filter(function(item) {
+    return item.Role === "Penyetuju" && String(item.Status).toLowerCase() === "aktif";
+  }).map(publicUser_);
+
   if (!user) {
     return {
       ok: true,
@@ -105,7 +109,8 @@ function getBootstrap() {
       user: { Email: email },
       rooms: rooms,
       bookings: [],
-      notifications: []
+      notifications: [],
+      approvers: []
     };
   }
 
@@ -118,7 +123,8 @@ function getBootstrap() {
       user: publicUser_(user),
       rooms: rooms,
       bookings: [],
-      notifications: []
+      notifications: [],
+      approvers: approvers
     };
   }
 
@@ -138,6 +144,7 @@ function getBootstrap() {
     rooms: rooms,
     bookings: visibleBookings.map(publicBooking_),
     notifications: buildNotifications_(user, bookings),
+    approvers: approvers,
     users: user.Role === "Admin" ? readUsers_().map(publicUser_) : []
   };
 }
