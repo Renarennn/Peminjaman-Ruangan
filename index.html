@@ -596,6 +596,39 @@
     <nav id="mobileNav" class="mobile-bottom-nav"></nav>
   </div>
 
+  <div class="modal fade" id="adminUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header"><h5 class="modal-title">Ubah status pengguna</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+        <div class="modal-body">
+          <p id="adminUserSummary" class="small text-secondary mb-3"></p>
+          <label class="form-label" for="adminUserStatus">Status akun</label>
+          <select id="adminUserStatus" class="form-select">
+            <option value="Aktif">Aktif</option>
+            <option value="Menunggu">Menunggu</option>
+            <option value="Ditolak">Ditolak</option>
+          </select>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn-light-soft" data-bs-dismiss="modal">Batal</button><button id="saveAdminUserBtn" type="button" class="btn btn-brand">Simpan</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adminRoomModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header"><h5 id="adminRoomModalTitle" class="modal-title">Tambah ruangan</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+        <div class="modal-body">
+          <div class="mb-3"><label class="form-label" for="adminRoomId">ID ruangan</label><input id="adminRoomId" class="form-control" placeholder="Contoh: R007" required></div>
+          <div class="mb-3"><label class="form-label" for="adminRoomName">Nama ruangan</label><input id="adminRoomName" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label" for="adminRoomStatus">Status</label><select id="adminRoomStatus" class="form-select"><option value="Aktif">Aktif</option><option value="Nonaktif">Nonaktif</option></select></div>
+          <div><label class="form-label" for="adminRoomDescription">Deskripsi</label><textarea id="adminRoomDescription" class="form-control" rows="3"></textarea></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn-light-soft" data-bs-dismiss="modal">Batal</button><button id="saveAdminRoomBtn" type="button" class="btn btn-brand">Simpan ruangan</button></div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="appToast" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="toast-body d-flex align-items-start gap-2"><i id="toastIcon" class="bi bi-check-circle text-success fs-5"></i><div><div id="toastTitle" class="toast-title">Berhasil</div><div id="toastMessage">Perubahan berhasil disimpan.</div></div><button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Tutup"></button></div>
@@ -862,7 +895,73 @@
         : '<tr><td colspan="5"><div class="empty-state py-3"><p>Belum ada data ruangan.</p></div></td></tr>';
       document.getElementById("allBookingsTable").innerHTML = state.bookings.map((booking) => bookingRow(booking, true)).join("");
       bindBookingViewButtons();
-      document.querySelectorAll("[data-admin-action], [data-admin-room]").forEach((button) => button.addEventListener("click", () => showToast("Fungsi pengelolaan akan terhubung ke Google Sheet pada tahap berikutnya.", "Panel Admin", "info")));
+      document.querySelectorAll("[data-admin-action]").forEach((button) => button.addEventListener("click", () => openAdminUserEditor(button.dataset.adminAction)));
+      document.querySelectorAll("[data-admin-room]").forEach((button) => button.addEventListener("click", () => openAdminRoomEditor(button.dataset.adminRoom)));
+    }
+
+    function openAdminUserEditor(email) {
+      const user = state.users.find((item) => item.email === email);
+      if (!user) return;
+      document.getElementById("adminUserSummary").textContent = user.name + " · " + user.email;
+      document.getElementById("adminUserStatus").value = user.status || "Menunggu";
+      document.getElementById("saveAdminUserBtn").dataset.email = user.email;
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("adminUserModal")).show();
+    }
+
+    function openAdminRoomEditor(id) {
+      const room = state.rooms.find((item) => item.id === id);
+      document.getElementById("adminRoomModalTitle").textContent = room ? "Ubah ruangan" : "Tambah ruangan";
+      document.getElementById("adminRoomId").value = room ? room.id : "";
+      document.getElementById("adminRoomId").readOnly = Boolean(room);
+      document.getElementById("adminRoomName").value = room ? room.name : "";
+      document.getElementById("adminRoomStatus").value = room && isRoomAvailable(room.status) ? "Aktif" : "Nonaktif";
+      document.getElementById("adminRoomDescription").value = room ? room.desc : "";
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("adminRoomModal")).show();
+    }
+
+    async function saveAdminUser() {
+      const button = document.getElementById("saveAdminUserBtn");
+      button.disabled = true;
+      try {
+        const result = await callServer("setUserStatus", {
+          email: button.dataset.email,
+          status: document.getElementById("adminUserStatus").value
+        });
+        if (!result || result.ok === false) throw new Error((result && result.error) || "Status pengguna belum tersimpan.");
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("adminUserModal")).hide();
+        await syncData();
+        showToast(result.message || "Status pengguna berhasil diperbarui.", "Perubahan tersimpan", "success");
+      } catch (error) {
+        showToast(error.message || "Status pengguna belum tersimpan.", "Gagal menyimpan", "danger");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function saveAdminRoom() {
+      const button = document.getElementById("saveAdminRoomBtn");
+      const payload = {
+        id: document.getElementById("adminRoomId").value.trim(),
+        name: document.getElementById("adminRoomName").value.trim(),
+        status: document.getElementById("adminRoomStatus").value,
+        description: document.getElementById("adminRoomDescription").value.trim()
+      };
+      if (!payload.id || !payload.name) {
+        showToast("ID dan nama ruangan wajib diisi.", "Data belum lengkap", "warning");
+        return;
+      }
+      button.disabled = true;
+      try {
+        const result = await callServer("saveRoom", payload);
+        if (!result || result.ok === false) throw new Error((result && result.error) || "Data ruangan belum tersimpan.");
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("adminRoomModal")).hide();
+        await syncData();
+        showToast(result.message || "Data ruangan berhasil disimpan.", "Perubahan tersimpan", "success");
+      } catch (error) {
+        showToast(error.message || "Data ruangan belum tersimpan.", "Gagal menyimpan", "danger");
+      } finally {
+        button.disabled = false;
+      }
     }
 
     function bindBookingViewButtons() {
@@ -1110,6 +1209,13 @@
       button.classList.add("active");
       document.getElementById("admin" + button.dataset.adminTab.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("")).classList.remove("d-none");
     }));
+    document.getElementById("saveAdminUserBtn").addEventListener("click", saveAdminUser);
+    document.getElementById("saveAdminRoomBtn").addEventListener("click", saveAdminRoom);
+    document.getElementById("adminAddBtn").addEventListener("click", () => {
+      const activeTab = document.querySelector("[data-admin-tab].active");
+      if (activeTab && activeTab.dataset.adminTab === "rooms") openAdminRoomEditor("");
+      else showToast("Pengguna baru mendaftar melalui tombol Masuk dengan Google.", "Panel Admin", "info");
+    });
     document.getElementById("registrationForm").addEventListener("submit", (event) => {
       event.preventDefault();
       const role = document.getElementById("registerRole").value;
