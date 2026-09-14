@@ -213,7 +213,7 @@ function createBooking(data) {
   }
 
   const room = readRooms_().find(function(item) {
-    return item.ID === roomId && String(item.Status).toLowerCase() === "aktif";
+    return item.ID === roomId && isRoomActive_(item.Status);
   });
   if (!room) {
     throw new Error("Ruangan tidak tersedia.");
@@ -224,7 +224,7 @@ function createBooking(data) {
     approver = readUsers_().find(function(item) {
       return item.Email === approverEmail &&
         item.Role === "Penyetuju" &&
-        String(item.Status).toLowerCase() === "aktif";
+        isRoomActive_(item.Status);
     });
     if (!approver) {
       throw new Error("Penyetuju tidak valid atau belum aktif.");
@@ -392,7 +392,7 @@ function saveRoom(data) {
   const description = clean_(data && (data.description || data.desc));
 
   if (!id || !name) throw new Error("ID dan nama ruangan wajib diisi.");
-  if (["Aktif", "Nonaktif"].indexOf(status) === -1) {
+  if (["Aktif", "Tersedia", "Nonaktif"].indexOf(status) === -1) {
     throw new Error("Status ruangan tidak valid.");
   }
 
@@ -666,6 +666,10 @@ function timeValue_(value) {
   const text = String(value).trim();
   const match = text.match(/^(\d{1,2}):(\d{2})/);
   return match ? String(match[1]).padStart(2, "0") + ":" + match[2] : text;
+}
+
+function isRoomActive_(status) {
+  return ["aktif", "tersedia", "available"].indexOf(clean_(status).toLowerCase()) !== -1;
 }
 
 function todayKey_() {
