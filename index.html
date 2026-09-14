@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#5b5ce2">
+  <title>Peminjaman Ruangan</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --brand: #5b5ce2;
+      --brand-dark: #4546b8;
+      --ink: #20233a;
+      --muted: #737791;
+      --line: #e9eaf3;
+      --surface: #ffffff;
+      --soft: #f6f7fb;
+      --success: #18a878;
+      --warning: #f2a93b;
+      --danger: #e05b74;
+      --shadow: 0 16px 45px rgba(37, 42, 92, .08);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      background: var(--soft);
+      color: var(--ink);
+      font-size: 14px;
+    }
+    button, input, select, textarea { font-family: inherit; }
+    .d-none-important { display: none !important; }
+
+    .login-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      overflow: hidden;
+      position: relative;
+      background:
+        radial-gradient(circle at 8% 12%, rgba(128, 129, 255, .32), transparent 30%),
+        radial-gradient(circle at 92% 85%, rgba(37, 205, 187, .22), transparent 30%),
+        linear-gradient(135deg, #222552 0%, #3f3c96 55%, #5b5ce2 100%);
+    }
+    .login-screen::before,
+    .login-screen::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      pointer-events: none;
+    }
+    .login-screen::before { width: 480px; height: 480px; top: -210px; right: -110px; }
+    .login-screen::after { width: 620px; height: 620px; bottom: -390px; left: -210px; }
+    .login-wrap {
+      width: min(1060px, 100%);
+      min-height: 620px;
+      display: grid;
+      grid-template-columns: 1.06fr .94fr;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 30px;
+      box-shadow: 0 30px 90px rgba(15, 19, 66, .32);
+      background: rgba(255,255,255,.97);
+    }
+    .login-visual {
+      padding: 54px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(150deg, rgba(40, 40, 111, .15), rgba(48, 47, 137, .65)),
+        linear-gradient(135deg, #6f70ee, #343478);
+    }
+    .login-visual h1 { font-size: clamp(32px, 4vw, 54px); line-height: 1.08; letter-spacing: -1.8px; max-width: 470px; }
+    .login-visual p { color: rgba(255,255,255,.78); max-width: 445px; line-height: 1.8; }
+    .visual-grid {
+      position: absolute;
+      right: 36px;
+      bottom: 40px;
+      width: 280px;
+      height: 205px;
+      transform: rotate(-7deg);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 23px;
+      padding: 18px;
+      background: rgba(255,255,255,.14);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px rgba(21, 22, 87, .28);
+    }
+    .visual-grid .fake-title { height: 12px; width: 44%; border-radius: 99px; background: rgba(255,255,255,.7); margin-bottom: 20px; }
+    .visual-grid .fake-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 9px; }
+    .visual-grid .fake-cell { height: 18px; border-radius: 6px; background: rgba(255,255,255,.2); }
+    .visual-grid .fake-cell.active { background: #80ead1; box-shadow: 0 0 0 4px rgba(128,234,209,.14); }
+    .visual-grid .fake-cell.busy { background: #ffc56d; }
+    .login-form-side { padding: 54px clamp(28px, 5vw, 72px); display: flex; align-items: center; }
+    .login-form-box { width: 100%; max-width: 380px; margin: auto; }
+    .brand-mark {
+      width: 45px; height: 45px; display: inline-grid; place-items: center;
+      border-radius: 14px; background: linear-gradient(135deg, #7374f3, #4a4bc5);
+      color: #fff; font-size: 22px; box-shadow: 0 10px 25px rgba(91,92,226,.25);
+    }
+    .login-form-box h2 { letter-spacing: -1px; font-weight: 800; margin-top: 23px; }
+    .login-form-box .lead { color: var(--muted); line-height: 1.7; }
+    .google-btn {
+      width: 100%; border: 1px solid var(--line); background: #fff; color: var(--ink);
+      padding: 14px 16px; border-radius: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: .2s ease; box-shadow: 0 5px 15px rgba(30,35,80,.04);
+    }
+    .google-btn:hover { border-color: #c5c6dd; transform: translateY(-1px); box-shadow: 0 10px 24px rgba(30,35,80,.1); }
+    .google-logo { width: 19px; height: 19px; }
+    .login-note { color: #9a9cb0; font-size: 12px; line-height: 1.65; text-align: center; margin-top: 20px; }
+    .text-button { border: 0; background: transparent; color: var(--brand); font-weight: 700; }
+
+    .app-shell { min-height: 100vh; }
+    .sidebar {
+      width: 255px; position: fixed; z-index: 20; inset: 0 auto 0 0;
+      display: flex; flex-direction: column; padding: 25px 16px 18px;
+      background: #fff; border-right: 1px solid var(--line);
+    }
+    .brand {
+      display: flex; align-items: center; gap: 11px; color: var(--ink);
+      text-decoration: none; font-weight: 800; font-size: 16px; padding: 0 10px 28px;
+    }
+    .brand .brand-mark { width: 38px; height: 38px; border-radius: 12px; font-size: 18px; }
+    .nav-label { color: #aaacc0; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; padding: 12px 12px 8px; }
+    .side-nav { display: grid; gap: 4px; }
+    .side-nav button {
+      border: 0; background: transparent; width: 100%; text-align: left; color: #777a94;
+      padding: 12px 13px; border-radius: 12px; display: flex; align-items: center; gap: 12px;
+      font-weight: 600; transition: .2s ease;
+    }
+    .side-nav button i { font-size: 18px; width: 21px; text-align: center; }
+    .side-nav button:hover { background: #f3f3fc; color: var(--brand); }
+    .side-nav button.active { background: #eeefff; color: var(--brand); font-weight: 800; }
+    .sidebar-bottom { margin-top: auto; }
+    .mini-help {
+      padding: 15px; border-radius: 16px; color: #fff; margin: 12px 4px 20px;
+      background: linear-gradient(135deg, #6162e6, #494abf);
+    }
+    .mini-help small { display: block; color: rgba(255,255,255,.73); line-height: 1.55; margin-top: 5px; }
+    .sidebar-user {
+      display: flex; gap: 9px; align-items: center; padding: 10px 7px 0; border-top: 1px solid var(--line);
+    }
+    .avatar { width: 37px; height: 37px; border-radius: 12px; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; background: linear-gradient(135deg,#8485ff,#5152c7); flex: 0 0 auto; }
+    .sidebar-user strong { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 142px; }
+    .sidebar-user small { color: var(--muted); font-size: 10px; }
+
+    .main-area { margin-left: 255px; min-height: 100vh; }
+    .topbar {
+      height: 77px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 38px; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px);
+    }
+    .page-heading h1 { font-size: 19px; margin: 0; font-weight: 800; letter-spacing: -.5px; }
+    .page-heading p { color: var(--muted); margin: 4px 0 0; font-size: 11px; }
+    .top-actions { display: flex; align-items: center; gap: 16px; }
+    .icon-btn {
+      width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 12px; color: #777a94;
+      background: #fff; position: relative; display: inline-grid; place-items: center; font-size: 17px;
+    }
+    .icon-btn:hover { color: var(--brand); border-color: #c9caf0; }
+    .notification-badge {
+      position: absolute; min-width: 17px; height: 17px; display: grid; place-items: center;
+      border-radius: 99px; top: -5px; right: -5px; color: #fff; background: var(--danger);
+      font-size: 9px; font-weight: 800; border: 2px solid #fff;
+    }
+    .profile-menu { border: 0; background: transparent; display: flex; gap: 9px; align-items: center; padding: 0; }
+    .profile-menu .avatar { width: 34px; height: 34px; border-radius: 11px; }
+    .profile-menu .profile-text { text-align: left; }
+    .profile-menu strong { display: block; font-size: 12px; }
+    .profile-menu small { color: var(--muted); font-size: 10px; }
+    .notification-panel {
+      display: none; position: absolute; top: 54px; right: 0; width: 330px; background: #fff;
+      border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden;
+    }
+    .notification-panel.show { display: block; }
+    .notification-head { padding: 15px 16px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .notification-head strong { font-size: 13px; }
+    .notification-item { display: flex; gap: 11px; padding: 13px 16px; border-bottom: 1px solid #f2f2f7; }
+    .notification-item:last-child { border-bottom: 0; }
+    .notification-item .notice-icon { width: 29px; height: 29px; border-radius: 9px; display: grid; place-items: center; background: #eeefff; color: var(--brand); flex: 0 0 auto; }
+    .notification-item p { font-size: 11px; line-height: 1.5; margin: 0; color: #5e6179; }
+    .notification-item time { color: #aaacc0; font-size: 10px; display: block; margin-top: 4px; }
+
+    .content { padding: 32px 38px 70px; max-width: 1500px; }
+    .page { display: none; animation: pageIn .25s ease; }
+    .page.active { display: block; }
+    @keyframes pageIn { from { opacity: .2; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .eyebrow { color: var(--brand); text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; }
+    .section-title { font-size: 18px; font-weight: 800; letter-spacing: -.5px; margin: 0; }
+    .section-subtitle { color: var(--muted); font-size: 12px; margin: 5px 0 0; }
+    .card-soft {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      box-shadow: 0 5px 25px rgba(37,42,92,.025);
+    }
+    .hero {
+      color: #fff; min-height: 190px; padding: 30px 34px; border-radius: var(--radius); position: relative; overflow: hidden;
+      background:
+        radial-gradient(circle at 90% 20%, rgba(255,255,255,.18), transparent 26%),
+        linear-gradient(110deg, #4849bd 0%, #6869e7 72%, #7d7ff4 100%);
+    }
+    .hero::after { content: ""; position: absolute; width: 240px; height: 240px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; right: 30px; top: -110px; }
+    .hero h2 { font-size: 24px; font-weight: 800; letter-spacing: -.8px; position: relative; z-index: 1; }
+    .hero p { color: rgba(255,255,255,.78); max-width: 510px; line-height: 1.7; position: relative; z-index: 1; }
+    .hero .btn { position: relative; z-index: 1; }
+    .btn-brand { border: 0; color: #fff; background: var(--brand); border-radius: 11px; font-size: 12px; font-weight: 800; padding: 11px 16px; }
+    .btn-brand:hover { color: #fff; background: var(--brand-dark); }
+    .btn-white { border: 0; color: var(--brand-dark); background: #fff; border-radius: 11px; font-size: 12px; font-weight: 800; padding: 11px 16px; }
+    .btn-light-soft { border: 1px solid var(--line); background: #fff; color: #676a84; border-radius: 10px; font-size: 11px; font-weight: 700; padding: 9px 12px; }
+    .btn-light-soft:hover { border-color: #c9caf0; color: var(--brand); }
+    .stat-card { padding: 19px; height: 100%; position: relative; overflow: hidden; }
+    .stat-card .stat-icon { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 12px; color: var(--brand); background: #eeefff; font-size: 18px; }
+    .stat-card h3 { margin: 16px 0 2px; font-size: 25px; font-weight: 800; letter-spacing: -1px; }
+    .stat-card p { color: var(--muted); margin: 0; font-size: 11px; }
+    .stat-card .trend { color: var(--success); font-size: 10px; font-weight: 700; position: absolute; right: 18px; top: 20px; }
+    .calendar-card { padding: 22px; }
+    .calendar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 19px; }
+    .calendar-head h3 { font-size: 14px; font-weight: 800; margin: 0; }
+    .calendar-control { display: flex; gap: 6px; }
+    .calendar-control button { width: 27px; height: 27px; border: 1px solid var(--line); background: #fff; color: #777a94; border-radius: 8px; }
+    .calendar-control button:hover { color: var(--brand); border-color: #c9caf0; }
+    .calendar-week, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .calendar-week span { text-align: center; color: #a3a5b8; text-transform: uppercase; font-size: 9px; font-weight: 800; padding-bottom: 10px; }
+    .calendar-day { min-height: 63px; border-top: 1px solid #f0f0f6; border-right: 1px solid #f0f0f6; padding: 8px; font-size: 11px; color: #60637d; position: relative; }
+    .calendar-day:nth-child(7n+1) { border-left: 1px solid #f0f0f6; }
+    .calendar-day.muted { color: #c6c7d5; background: #fcfcfe; }
+    .calendar-day.today span { width: 24px; height: 24px; display: inline-grid; place-items: center; border-radius: 50%; color: #fff; background: var(--brand); font-weight: 800; }
+    .calendar-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin: 2px 2px 0 0; background: var(--success); }
+    .calendar-dot.busy { background: var(--warning); }
+    .calendar-dot.pending { background: var(--brand); }
+    .legend { display: flex; gap: 14px; margin-top: 13px; color: var(--muted); font-size: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+    .legend-dot.orange { background: var(--warning); }
+    .legend-dot.purple { background: var(--brand); }
+    .activity-card { padding: 22px; }
+    .activity-list { display: grid; gap: 17px; margin-top: 17px; }
+    .activity { display: flex; align-items: flex-start; gap: 11px; }
+    .activity-icon { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; flex: 0 0 auto; background: #eeefff; color: var(--brand); }
+    .activity-icon.green { color: var(--success); background: #e6f8f2; }
+    .activity-icon.orange { color: #c77a0a; background: #fff3de; }
+    .activity p { margin: 0; font-size: 11px; line-height: 1.5; color: #60637d; }
+    .activity time { color: #aaacc0; font-size: 10px; }
+
+    .room-card { overflow: hidden; height: 100%; }
+    .room-cover { height: 135px; position: relative; overflow: hidden; background: linear-gradient(135deg,#d8d9ff,#898af0); }
+    .room-cover::before, .room-cover::after { content: ""; position: absolute; border: 1px solid rgba(255,255,255,.65); border-radius: 50%; }
+    .room-cover::before { width: 190px; height: 190px; right: -55px; top: -90px; }
+    .room-cover::after { width: 110px; height: 110px; left: -25px; bottom: -65px; }
+    .room-cover.green { background: linear-gradient(135deg,#c4eee1,#45bfa7); }
+    .room-cover.orange { background: linear-gradient(135deg,#ffe1b7,#f0a050); }
+    .room-cover.blue { background: linear-gradient(135deg,#c9e6ff,#6597e4); }
+    .room-cover.pink { background: linear-gradient(135deg,#ffd6e1,#d780a1); }
+    .room-illustration { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.9); font-size: 48px; }
+    .room-status { position: absolute; z-index: 1; top: 13px; right: 13px; padding: 5px 8px; color: #fff; border-radius: 99px; font-size: 9px; font-weight: 800; background: rgba(24,168,120,.9); }
+    .room-body { padding: 17px; }
+    .room-body h3 { font-size: 14px; font-weight: 800; margin: 0 0 7px; }
+    .room-body p { color: var(--muted); font-size: 11px; line-height: 1.55; height: 35px; margin: 0 0 14px; }
+    .room-meta { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 10px; }
+    .room-meta i { color: var(--brand); margin-right: 3px; }
+    .filter-bar { padding: 14px; margin-bottom: 21px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .search-box { flex: 1 1 220px; position: relative; }
+    .search-box i { position: absolute; left: 12px; top: 9px; color: #aaa; }
+    .search-box input { padding-left: 35px; }
+    .form-control, .form-select { border: 1px solid var(--line); border-radius: 10px; font-size: 12px; padding: 10px 12px; color: var(--ink); }
+    .form-control:focus, .form-select:focus { border-color: #aaaaf0; box-shadow: 0 0 0 4px rgba(91,92,226,.09); }
+    .form-label { color: #5d607a; font-size: 11px; font-weight: 800; margin-bottom: 7px; }
+    .booking-form-card { padding: 24px; max-width: 920px; }
+    .booking-room-preview { padding: 15px; background: #f5f5ff; border-radius: 13px; display: flex; gap: 12px; align-items: center; }
+    .booking-room-preview i { width: 40px; height: 40px; display: grid; place-items: center; color: var(--brand); background: #e5e5ff; border-radius: 12px; font-size: 20px; }
+    .booking-room-preview strong { font-size: 13px; display: block; }
+    .booking-room-preview small { color: var(--muted); }
+    .table-card { overflow: hidden; }
+    .table-card .table { margin: 0; }
+    .table > :not(caption) > * > * { padding: 15px 18px; border-bottom-color: #f0f0f5; vertical-align: middle; }
+    .table thead th { color: #a1a3b4; font-size: 9px; letter-spacing: .7px; text-transform: uppercase; background: #fbfbfd; font-weight: 800; }
+    .table tbody td { font-size: 11px; color: #64677f; }
+    .table tbody tr:last-child td { border-bottom: 0; }
+    .table strong { color: var(--ink); font-size: 11px; }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 99px; padding: 6px 9px; font-size: 9px; font-weight: 800; white-space: nowrap; }
+    .status-pill::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .status-active, .status-approved { color: var(--success); background: #e7f8f2; }
+    .status-pending { color: #c17d10; background: #fff4df; }
+    .status-rejected { color: var(--danger); background: #fff0f3; }
+    .status-inactive { color: #85889c; background: #f0f1f6; }
+    .empty-state { text-align: center; padding: 42px 20px; color: var(--muted); }
+    .empty-state i { font-size: 35px; color: #c6c7ed; }
+    .empty-state p { font-size: 12px; margin: 11px 0 0; }
+    .admin-tabs { display: flex; gap: 5px; padding: 5px; background: #f3f3f9; border-radius: 12px; width: fit-content; }
+    .admin-tabs button { border: 0; background: transparent; border-radius: 9px; padding: 9px 13px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .admin-tabs button.active { background: #fff; color: var(--brand); box-shadow: 0 2px 7px rgba(40,40,90,.07); }
+    .pending-box { max-width: 560px; margin: 40px auto; padding: 40px 32px; text-align: center; }
+    .pending-box .pending-icon { width: 75px; height: 75px; display: grid; place-items: center; margin: 0 auto 20px; border-radius: 25px; font-size: 32px; color: #c17d10; background: #fff4df; }
+    .pending-box h2 { font-weight: 800; font-size: 21px; }
+    .pending-box p { color: var(--muted); line-height: 1.75; font-size: 12px; max-width: 410px; margin: 10px auto 23px; }
+    .mobile-bottom-nav { display: none; }
+    .toast-container { z-index: 1080; }
+    .custom-toast { border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); background: #fff; }
+    .custom-toast .toast-body { font-size: 12px; color: #62657e; }
+    .custom-toast .toast-title { font-weight: 800; color: var(--ink); font-size: 12px; }
+    .form-hint { color: #9698aa; font-size: 10px; margin-top: 6px; }
+    .sync-text { font-size: 10px; color: #a1a3b4; }
+    .sync-dot { width: 6px; height: 6px; display: inline-block; border-radius: 50%; background: var(--success); margin-right: 5px; }
+    .alert-soft { color: #5e6179; background: #f7f7fd; border: 1px solid #e8e8fa; border-radius: 12px; padding: 12px 14px; font-size: 11px; line-height: 1.6; }
+
+    @media (max-width: 991.98px) {
+      .login-wrap { grid-template-columns: 1fr; max-width: 560px; min-height: auto; }
+      .login-visual { display: none; }
+      .login-form-side { padding: 45px 28px; min-height: 580px; }
+      .sidebar { width: 220px; }
+      .main-area { margin-left: 220px; }
+      .topbar, .content { padding-left: 25px; padding-right: 25px; }
+    }
+    @media (max-width: 767.98px) {
+      .sidebar { display: none; }
+      .main-area { margin-left: 0; padding-bottom: 70px; }
+      .topbar { height: 68px; padding: 0 16px; }
+      .page-heading h1 { font-size: 16px; }
+      .page-heading p { display: none; }
+      .top-actions { gap: 9px; }
+      .profile-text { display: none; }
+      .content { padding: 22px 16px 35px; }
+      .hero { padding: 24px 21px; min-height: 205px; }
+      .hero h2 { font-size: 20px; max-width: 260px; }
+      .hero p { font-size: 11px; max-width: 260px; }
+      .calendar-card, .activity-card, .booking-form-card { padding: 17px; }
+      .calendar-day { min-height: 49px; padding: 5px; font-size: 10px; }
+      .calendar-dot { width: 5px; height: 5px; }
+      .table-card { overflow-x: auto; }
+      .table-card .table { min-width: 650px; }
+      .mobile-bottom-nav {
+        display: flex; position: fixed; z-index: 30; bottom: 0; inset-inline: 0; height: 67px;
+        background: rgba(255,255,255,.96); border-top: 1px solid var(--line); justify-content: space-around;
+        padding: 8px 7px; backdrop-filter: blur(12px);
+      }
+      .mobile-bottom-nav button { border: 0; background: transparent; color: #9a9caf; font-size: 9px; font-weight: 700; display: grid; place-items: center; gap: 2px; min-width: 61px; }
+      .mobile-bottom-nav button i { font-size: 19px; }
+      .mobile-bottom-nav button.active { color: var(--brand); }
+      .notification-panel { position: fixed; top: 61px; right: 12px; width: min(330px, calc(100vw - 24px)); }
+    }
+  </style>
+</head>
+
+<body>
+  <section id="loginView" class="login-screen">
+    <div class="login-wrap">
+      <div class="login-visual">
+        <span class="badge rounded-pill text-bg-light text-primary px-3 py-2 fw-bold">RUANG KERJA LEBIH TERATUR</span>
+        <h1 class="mt-4 mb-3">Pesan ruangan tanpa bentrok jadwal.</h1>
+        <p>Kelola pengajuan, persetujuan, dan ketersediaan ruangan dari satu tempat yang sederhana.</p>
+        <div class="visual-grid" aria-hidden="true">
+          <div class="fake-title"></div>
+          <div class="fake-row"><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell active"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span></div>
+          <div class="fake-row"><span class="fake-cell"></span><span class="fake-cell busy"></span><span class="fake-cell busy"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span></div>
+          <div class="fake-row"><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell active"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span></div>
+          <div class="fake-row"><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell"></span><span class="fake-cell busy"></span><span class="fake-cell"></span></div>
+        </div>
+      </div>
+
+      <div class="login-form-side">
+        <div class="login-form-box">
+          <div class="brand-mark"><i class="bi bi-building"></i></div>
+          <h2>Selamat datang 👋</h2>
+          <p class="lead">Masuk untuk mengajukan atau menyetujui peminjaman ruangan.</p>
+          <button id="googleLoginBtn" class="google-btn mt-3" type="button">
+            <svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M21.35 12.23c0-.73-.06-1.44-.19-2.12H12v4.02h5.23a4.47 4.47 0 0 1-1.94 2.93v2.44h3.14c1.84-1.69 2.92-4.18 2.92-7.27Z"/>
+              <path fill="#34A853" d="M12 21.6c2.63 0 4.84-.87 6.45-2.35l-3.14-2.44c-.87.58-1.98.92-3.31.92-2.54 0-4.7-1.72-5.47-4.03H3.29v2.52A9.74 9.74 0 0 0 12 21.6Z"/>
+              <path fill="#FBBC05" d="M6.53 13.7a5.86 5.86 0 0 1 0-3.39V7.79H3.29a9.78 9.78 0 0 0 0 8.43l3.24-2.52Z"/>
+              <path fill="#EA4335" d="M12 6.28c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.31 14.63 2.4 12 2.4a9.74 9.74 0 0 0-8.71 5.39l3.24 2.52c.77-2.31 2.93-4.03 5.47-4.03Z"/>
+            </svg>
+            Masuk dengan Google
+          </button>
+          <div class="text-center mt-3">
+            <button id="previewBtn" class="text-button" type="button">Lihat pratinjau aplikasi</button>
+          </div>
+          <p class="login-note">Login Google wajib digunakan pada versi sebenarnya. Pratinjau hanya untuk melihat tampilan aplikasi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="registrationView" class="login-screen d-none-important">
+    <div class="login-wrap">
+      <div class="login-visual">
+        <span class="badge rounded-pill text-bg-light text-primary px-3 py-2 fw-bold">PENDAFTARAN AKUN</span>
+        <h1 class="mt-4 mb-3">Buat akun untuk mulai memakai ruangan.</h1>
+        <p>Pengguna langsung aktif. Penyetuju dan Admin akan menunggu persetujuan Admin.</p>
+      </div>
+      <div class="login-form-side">
+        <div class="login-form-box">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="brand-mark"><i class="bi bi-person-plus"></i></div>
+            <button id="backToLoginBtn" class="btn-light-soft" type="button"><i class="bi bi-arrow-left me-1"></i>Kembali</button>
+          </div>
+          <h2>Daftar akun</h2>
+          <p class="lead">Isi data sesuai identitas Google yang akan digunakan.</p>
+          <form id="registrationForm" class="mt-4">
+            <div class="mb-3">
+              <label class="form-label" for="registerEmail">Email Gmail</label>
+              <input id="registerEmail" class="form-control" type="email" placeholder="nama@gmail.com" required>
+              <div class="form-hint">Email menjadi identitas dan tidak dapat diubah.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="registerName">Nama lengkap</label>
+              <input id="registerName" class="form-control" type="text" placeholder="Nama sesuai identitas" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="registerDept">Departemen</label>
+              <input id="registerDept" class="form-control" type="text" placeholder="Contoh: Human Capital" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="registerRole">Peran yang diajukan</label>
+              <select id="registerRole" class="form-select" required>
+                <option value="Pengguna">Pengguna</option>
+                <option value="Penyetuju">Penyetuju</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <button class="btn btn-brand w-100" type="submit">Kirim pendaftaran <i class="bi bi-arrow-right ms-1"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="appShell" class="app-shell d-none-important">
+    <aside class="sidebar">
+      <a class="brand" href="#" data-page="dashboard">
+        <span class="brand-mark"><i class="bi bi-building"></i></span>
+        <span>Peminjaman<br>Ruangan</span>
+      </a>
+      <div class="nav-label">Menu utama</div>
+      <nav id="sideNav" class="side-nav"></nav>
+      <div class="sidebar-bottom">
+        <div class="mini-help">
+          <i class="bi bi-headset fs-5"></i>
+          <strong class="d-block mt-2 fs-6">Butuh bantuan?</strong>
+          <small>Hubungi Admin jika ada masalah pada pengajuan.</small>
+        </div>
+        <div class="sidebar-user">
+          <div id="sideAvatar" class="avatar">FD</div>
+          <div>
+            <strong id="sideUserName">Fitri Demo</strong>
+            <small id="sideUserRole">Pengguna</small>
+          </div>
+          <button id="logoutBtn" class="btn btn-sm ms-auto p-0 text-secondary" title="Keluar"><i class="bi bi-box-arrow-right"></i></button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="page-heading">
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Ringkasan aktivitas peminjaman ruangan.</p>
+        </div>
+        <div class="top-actions">
+          <span class="sync-text d-none d-md-inline"><span class="sync-dot"></span><span id="syncText">Mode pratinjau</span></span>
+          <div class="position-relative">
+            <button id="notificationBtn" class="icon-btn" type="button" aria-label="Notifikasi">
+              <i class="bi bi-bell"></i><span id="notificationBadge" class="notification-badge">0</span>
+            </button>
+            <div id="notificationPanel" class="notification-panel">
+              <div class="notification-head"><strong>Notifikasi</strong><button id="markReadBtn" class="text-button p-0" type="button">Tandai dibaca</button></div>
+              <div id="notificationList"></div>
+            </div>
+          </div>
+          <button class="profile-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div id="topAvatar" class="avatar">FD</div>
+            <div class="profile-text">
+              <strong id="topUserName">Fitri Demo</strong>
+              <small id="topUserRole">Pengguna</small>
+            </div>
+            <i class="bi bi-chevron-down text-secondary ms-1"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm mt-2">
+            <li><h6 class="dropdown-header">Mode pratinjau</h6></li>
+            <li><button class="dropdown-item small" type="button" data-demo-role="Pengguna">Lihat sebagai Pengguna</button></li>
+            <li><button class="dropdown-item small" type="button" data-demo-role="Penyetuju">Lihat sebagai Penyetuju</button></li>
+            <li><button class="dropdown-item small" type="button" data-demo-role="Admin">Lihat sebagai Admin</button></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button id="dropdownLogoutBtn" class="dropdown-item small text-danger" type="button"><i class="bi bi-box-arrow-right me-2"></i>Keluar</button></li>
+          </ul>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="page-dashboard" class="page active">
+          <div class="hero mb-4">
+            <div class="eyebrow text-white-50 mb-2">Selamat datang kembali</div>
+            <h2>Halo, <span id="heroUserName">Fitri</span> 👋</h2>
+            <p>Atur jadwal rapat dan gunakan ruangan yang sesuai kebutuhan tim kamu.</p>
+            <button class="btn btn-white mt-2" type="button" data-page="booking"><i class="bi bi-plus-lg me-1"></i>Ajukan peminjaman</button>
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-door-open"></i></span><span class="trend"><i class="bi bi-arrow-up-short"></i>Aktif</span><h3 id="statRooms">5</h3><p>Ruangan tersedia</p></div></div>
+            <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-calendar2-check"></i></span><span class="trend"><i class="bi bi-check2"></i>Aktif</span><h3 id="statBookings">0</h3><p>Peminjaman saya</p></div></div>
+            <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-hourglass-split"></i></span><span class="trend text-warning"><i class="bi bi-clock"></i>Proses</span><h3 id="statPending">0</h3><p>Menunggu persetujuan</p></div></div>
+            <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-check-circle"></i></span><span class="trend"><i class="bi bi-graph-up-arrow"></i>Baik</span><h3 id="statApproved">0</h3><p>Sudah disetujui</p></div></div>
+          </div>
+          <div class="row g-3">
+            <div class="col-xl-8">
+              <div class="card-soft calendar-card">
+                <div class="calendar-head">
+                  <div><h3>Kalender peminjaman</h3><p class="section-subtitle">Lihat jadwal ruangan bulan ini.</p></div>
+                  <div class="calendar-control"><button id="prevMonthBtn" type="button" aria-label="Bulan sebelumnya"><i class="bi bi-chevron-left"></i></button><button id="nextMonthBtn" type="button" aria-label="Bulan berikutnya"><i class="bi bi-chevron-right"></i></button></div>
+                </div>
+                <div id="calendarMonthLabel" class="fw-bold small mb-3"></div>
+                <div class="calendar-week"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+                <div class="legend"><span class="legend-item"><i class="legend-dot"></i>Disetujui</span><span class="legend-item"><i class="legend-dot orange"></i>Terisi</span><span class="legend-item"><i class="legend-dot purple"></i>Menunggu</span></div>
+              </div>
+            </div>
+            <div class="col-xl-4">
+              <div class="card-soft activity-card h-100">
+                <div class="d-flex justify-content-between align-items-start"><div><h3 class="section-title">Aktivitas terbaru</h3><p class="section-subtitle">Pembaruan terakhir dari sistem.</p></div><i class="bi bi-three-dots text-secondary"></i></div>
+                <div id="activityList" class="activity-list"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="page-rooms" class="page">
+          <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+            <div><div class="eyebrow">Pilihan ruang kerja</div><h2 class="section-title mt-1">Katalog Ruangan</h2><p class="section-subtitle">Pilih ruangan yang paling sesuai untuk kegiatanmu.</p></div>
+            <button class="btn btn-brand" type="button" data-page="booking"><i class="bi bi-plus-lg me-1"></i>Ajukan peminjaman</button>
+          </div>
+          <div class="card-soft filter-bar">
+            <div class="search-box"><i class="bi bi-search"></i><input id="roomSearch" class="form-control" type="search" placeholder="Cari nama ruangan..."></div>
+            <select id="roomStatusFilter" class="form-select" style="max-width: 165px"><option value="all">Semua status</option><option value="Aktif">Tersedia</option><option value="Nonaktif">Nonaktif</option></select>
+          </div>
+          <div id="roomGrid" class="row g-3"></div>
+        </section>
+
+        <section id="page-booking" class="page">
+          <div class="mb-4"><div class="eyebrow">Pengajuan baru</div><h2 class="section-title mt-1">Ajukan Peminjaman</h2><p class="section-subtitle">Lengkapi data berikut. Nama harus sama dengan nama saat mendaftar.</p></div>
+          <div class="card-soft booking-form-card">
+            <form id="bookingForm">
+              <div class="booking-room-preview mb-4"><i id="bookingRoomIcon" class="bi bi-door-open"></i><div><strong id="bookingRoomName">Pilih ruangan</strong><small id="bookingRoomId">Belum ada ruangan dipilih</small></div><button class="btn-light-soft ms-auto" type="button" data-page="rooms">Ganti</button></div>
+              <div class="alert-soft mb-4"><i class="bi bi-info-circle me-1 text-primary"></i> Pengajuan akan dikirim kepada penyetuju yang kamu pilih dan juga terlihat oleh Admin.</div>
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label" for="bookingName">Nama peminjam</label><input id="bookingName" class="form-control" type="text" required><div class="form-hint">Nama harus sama persis dengan data pendaftaran.</div></div>
+                <div class="col-md-6"><label class="form-label" for="bookingEmail">Email</label><input id="bookingEmail" class="form-control" type="email" readonly></div>
+                <div class="col-md-6"><label class="form-label" for="bookingDate">Tanggal</label><input id="bookingDate" class="form-control" type="date" required></div>
+                <div class="col-md-3"><label class="form-label" for="bookingStart">Waktu mulai</label><input id="bookingStart" class="form-control" type="time" required></div>
+                <div class="col-md-3"><label class="form-label" for="bookingEnd">Waktu selesai</label><input id="bookingEnd" class="form-control" type="time" required></div>
+                <div class="col-md-6"><label class="form-label" for="bookingApprover">Penyetuju</label><select id="bookingApprover" class="form-select" required><option value="">Pilih penyetuju</option><option value="penyetuju1@contoh.com|Siti Rahma">Siti Rahma</option><option value="penyetuju2@contoh.com|Andi Saputra">Andi Saputra</option></select></div>
+                <div class="col-md-6"><label class="form-label" for="bookingParticipants">Jumlah peserta</label><input id="bookingParticipants" class="form-control" type="number" min="1" placeholder="Contoh: 12" required></div>
+                <div class="col-12"><label class="form-label" for="bookingPurpose">Tujuan kegiatan</label><textarea id="bookingPurpose" class="form-control" rows="3" placeholder="Jelaskan keperluan peminjaman ruangan..." required></textarea></div>
+              </div>
+              <div class="d-flex justify-content-end gap-2 mt-4"><button class="btn-light-soft" type="button" data-page="dashboard">Batal</button><button class="btn btn-brand" type="submit">Kirim pengajuan <i class="bi bi-send ms-1"></i></button></div>
+            </form>
+          </div>
+        </section>
+
+        <section id="page-my-bookings" class="page">
+          <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+            <div><div class="eyebrow">Riwayat kamu</div><h2 class="section-title mt-1">Peminjaman Saya</h2><p class="section-subtitle">Pantau semua pengajuan peminjaman ruangan.</p></div>
+            <button class="btn btn-brand" type="button" data-page="booking"><i class="bi bi-plus-lg me-1"></i>Pengajuan baru</button>
+          </div>
+          <div class="card-soft table-card"><table class="table"><thead><tr><th>ID</th><th>Ruangan</th><th>Tanggal & waktu</th><th>Penyetuju</th><th>Status</th><th></th></tr></thead><tbody id="myBookingsTable"></tbody></table></div>
+        </section>
+
+        <section id="page-approvals" class="page">
+          <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3"><div><div class="eyebrow">Tugas penyetuju</div><h2 class="section-title mt-1">Menunggu Persetujuan</h2><p class="section-subtitle">Pengajuan yang ditujukan kepada kamu.</p></div><span id="approvalCount" class="status-pill status-pending">0 pengajuan</span></div>
+          <div id="approvalList" class="row g-3"></div>
+        </section>
+
+        <section id="page-admin" class="page">
+          <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3"><div><div class="eyebrow">Pusat kendali</div><h2 class="section-title mt-1">Panel Admin</h2><p class="section-subtitle">Kelola pengguna, ruangan, dan seluruh pengajuan.</p></div><button class="btn btn-brand" type="button" id="adminAddBtn"><i class="bi bi-plus-lg me-1"></i>Tambah data</button></div>
+          <div class="admin-tabs mb-3"><button class="active" type="button" data-admin-tab="users">Pengguna</button><button type="button" data-admin-tab="rooms">Ruangan</button><button type="button" data-admin-tab="all-bookings">Semua Peminjaman</button></div>
+          <div id="adminUsers" class="admin-panel card-soft table-card"><table class="table"><thead><tr><th>Nama</th><th>Email</th><th>Departemen</th><th>Peran</th><th>Status</th><th></th></tr></thead><tbody id="usersTable"></tbody></table></div>
+          <div id="adminRooms" class="admin-panel card-soft table-card d-none"><table class="table"><thead><tr><th>ID</th><th>Nama ruangan</th><th>Deskripsi</th><th>Status</th><th></th></tr></thead><tbody id="adminRoomsTable"></tbody></table></div>
+          <div id="adminAllBookings" class="admin-panel card-soft table-card d-none"><table class="table"><thead><tr><th>ID</th><th>Peminjam</th><th>Ruangan</th><th>Tanggal</th><th>Penyetuju</th><th>Status</th><th></th></tr></thead><tbody id="allBookingsTable"></tbody></table></div>
+        </section>
+
+        <section id="page-registration" class="page">
+          <div class="pending-box card-soft"><div class="pending-icon"><i class="bi bi-person-plus"></i></div><h2>Pendaftaran berhasil dikirim</h2><p>Data kamu sudah tercatat. Pengguna dapat langsung memakai aplikasi, sedangkan Penyetuju dan Admin harus menunggu persetujuan Admin.</p><button class="btn btn-brand" type="button" data-page="dashboard">Kembali ke dashboard</button></div>
+        </section>
+
+        <section id="page-pending" class="page">
+          <div class="pending-box card-soft"><div class="pending-icon"><i class="bi bi-hourglass-split"></i></div><h2>Menunggu persetujuan Admin</h2><p>Akun kamu sudah terdaftar, tetapi belum aktif. Admin akan memeriksa pendaftaran ini terlebih dahulu.</p><button class="btn btn-brand" type="button" id="pendingLogoutBtn">Kembali ke login</button></div>
+        </section>
+      </div>
+    </main>
+
+    <nav id="mobileNav" class="mobile-bottom-nav"></nav>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="appToast" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-body d-flex align-items-start gap-2"><i id="toastIcon" class="bi bi-check-circle text-success fs-5"></i><div><div id="toastTitle" class="toast-title">Berhasil</div><div id="toastMessage">Perubahan berhasil disimpan.</div></div><button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Tutup"></button></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const CONFIG = {
+      API_URL: "",
+      POLL_MS: 60000,
+      APP_NAME: "Peminjaman Ruangan"
+    };
+
+    const today = new Date();
+    const pad = (number) => String(number).padStart(2, "0");
+    const dateKey = (date) => date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    const addDays = (days) => {
+      const copy = new Date();
+      copy.setDate(copy.getDate() + days);
+      return copy;
+    };
+    const formatDate = (value) => {
+      if (!value) return "-";
+      const date = new Date(value + "T00:00:00");
+      return date.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+    };
+    const formatMonth = (date) => date.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+    const escapeHTML = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
+    const initials = (name) => String(name || "User").split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join("").toUpperCase();
+
+    const state = {
+      role: "Pengguna",
+      currentPage: "dashboard",
+      calendarMonth: new Date(today.getFullYear(), today.getMonth(), 1),
+      user: { email: "fitri@contoh.com", name: "Fitri Demo", dept: "Human Capital", status: "Aktif" },
+      rooms: [
+        { id: "R002", name: "Ruang Business Sense", status: "Aktif", desc: "Ruang nyaman untuk diskusi dan rapat kecil.", type: "green", capacity: 12 },
+        { id: "R003", name: "Ruang Excellent Services", status: "Aktif", desc: "Ruang rapat dengan suasana tenang dan profesional.", type: "orange", capacity: 16 },
+        { id: "R004", name: "Ruang MEETING LT.2 (EX FIF)", status: "Aktif", desc: "Ruangan luas untuk rapat lintas departemen.", type: "blue", capacity: 30 },
+        { id: "R005", name: "LANTAI 2 HEPS", status: "Aktif", desc: "Area pertemuan untuk kegiatan internal tim.", type: "pink", capacity: 24 },
+        { id: "R006", name: "STUDIO PHOTO AMCJ", status: "Aktif", desc: "Studio untuk kebutuhan foto dan produksi konten.", type: "purple", capacity: 10 }
+      ],
+      bookings: [
+        { id: "PMJ-001", email: "fitri@contoh.com", name: "Fitri Demo", roomId: "R003", roomName: "Ruang Excellent Services", date: dateKey(addDays(1)), start: "09:00", end: "11:00", purpose: "Rapat koordinasi mingguan", participants: 10, approver: "Siti Rahma", approverEmail: "penyetuju1@contoh.com", status: "Disetujui", note: "", submitted: dateKey(today) },
+        { id: "PMJ-002", email: "fitri@contoh.com", name: "Fitri Demo", roomId: "R002", roomName: "Ruang Business Sense", date: dateKey(addDays(4)), start: "13:00", end: "15:00", purpose: "Diskusi program kerja", participants: 8, approver: "Andi Saputra", approverEmail: "penyetuju2@contoh.com", status: "Menunggu", note: "", submitted: dateKey(today) },
+        { id: "PMJ-003", email: "budi@contoh.com", name: "Budi Santoso", roomId: "R004", roomName: "Ruang MEETING LT.2 (EX FIF)", date: dateKey(addDays(2)), start: "10:00", end: "12:00", purpose: "Presentasi departemen", participants: 22, approver: "Siti Rahma", approverEmail: "penyetuju1@contoh.com", status: "Menunggu", note: "", submitted: dateKey(today) }
+      ],
+      notifications: [
+        { icon: "bi-calendar2-check", text: "Peminjaman R003 kamu sudah disetujui.", time: "Hari ini", read: false },
+        { icon: "bi-info-circle", text: "Jangan lupa hadir 10 menit sebelum rapat.", time: "Kemarin", read: false },
+        { icon: "bi-megaphone", text: "Sistem peminjaman siap digunakan.", time: "2 hari lalu", read: true }
+      ],
+      activities: [
+        { type: "green", icon: "bi-check-circle", text: "Peminjaman R003 disetujui oleh Siti Rahma.", time: "Hari ini, 08:42" },
+        { type: "orange", icon: "bi-hourglass-split", text: "Peminjaman R002 sedang menunggu persetujuan.", time: "Hari ini, 08:16" },
+        { type: "", icon: "bi-door-open", text: "5 ruangan aktif dan siap digunakan.", time: "Kemarin" }
+      ]
+    };
+
+    const roleMenus = {
+      Pengguna: [
+        { page: "dashboard", icon: "bi-grid-1x2", label: "Dashboard" },
+        { page: "rooms", icon: "bi-door-open", label: "Katalog Ruangan" },
+        { page: "booking", icon: "bi-plus-square", label: "Ajukan Peminjaman" },
+        { page: "my-bookings", icon: "bi-calendar2-check", label: "Peminjaman Saya" }
+      ],
+      Penyetuju: [
+        { page: "dashboard", icon: "bi-grid-1x2", label: "Dashboard" },
+        { page: "rooms", icon: "bi-door-open", label: "Katalog Ruangan" },
+        { page: "approvals", icon: "bi-clipboard-check", label: "Menunggu Persetujuan" }
+      ],
+      Admin: [
+        { page: "dashboard", icon: "bi-grid-1x2", label: "Dashboard" },
+        { page: "rooms", icon: "bi-door-open", label: "Katalog Ruangan" },
+        { page: "booking", icon: "bi-plus-square", label: "Ajukan Peminjaman" },
+        { page: "my-bookings", icon: "bi-calendar2-check", label: "Peminjaman Saya" },
+        { page: "approvals", icon: "bi-clipboard-check", label: "Semua Persetujuan" },
+        { page: "admin", icon: "bi-shield-check", label: "Panel Admin" }
+      ]
+    };
+
+    const pageInfo = {
+      dashboard: ["Dashboard", "Ringkasan aktivitas peminjaman ruangan."],
+      rooms: ["Katalog Ruangan", "Lihat ruangan dan ketersediaannya."],
+      booking: ["Ajukan Peminjaman", "Isi data pengajuan ruangan."],
+      "my-bookings": ["Peminjaman Saya", "Pantau semua pengajuan peminjaman ruangan."],
+      approvals: ["Menunggu Persetujuan", "Tinjau pengajuan yang masuk."],
+      admin: ["Panel Admin", "Kelola data aplikasi."],
+      registration: ["Pendaftaran", "Pendaftaran akun berhasil."],
+      pending: ["Menunggu Approval", "Akun masih menunggu persetujuan Admin."]
+    };
+
+    function showToast(message, title = "Berhasil", type = "success") {
+      const iconMap = { success: "bi-check-circle text-success", warning: "bi-exclamation-circle text-warning", danger: "bi-x-circle text-danger", info: "bi-info-circle text-primary" };
+      document.getElementById("toastIcon").className = "bi fs-5 " + (iconMap[type] || iconMap.success);
+      document.getElementById("toastTitle").textContent = title;
+      document.getElementById("toastMessage").textContent = message;
+      bootstrap.Toast.getOrCreateInstance(document.getElementById("appToast"), { delay: 4200 }).show();
+    }
+
+    function isAllowed(page) {
+      return roleMenus[state.role].some((item) => item.page === page) || ["registration", "pending"].includes(page);
+    }
+
+    function setPage(page) {
+      if (!isAllowed(page)) {
+        showToast("Halaman ini tidak tersedia untuk peran " + state.role + ".", "Akses dibatasi", "warning");
+        page = "dashboard";
+      }
+      state.currentPage = page;
+      document.querySelectorAll(".page").forEach((section) => section.classList.remove("active"));
+      const target = document.getElementById("page-" + page);
+      if (target) target.classList.add("active");
+      document.querySelectorAll("[data-page]").forEach((button) => button.classList.toggle("active", button.getAttribute("data-page") === page));
+      const info = pageInfo[page] || pageInfo.dashboard;
+      document.getElementById("pageTitle").textContent = info[0];
+      document.getElementById("pageSubtitle").textContent = info[1];
+      if (page === "dashboard") renderDashboard();
+      if (page === "rooms") renderRooms();
+      if (page === "booking") prepareBookingForm();
+      if (page === "my-bookings") renderMyBookings();
+      if (page === "approvals") renderApprovals();
+      if (page === "admin") renderAdmin();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderNav() {
+      const items = roleMenus[state.role];
+      const sideNav = document.getElementById("sideNav");
+      const mobileNav = document.getElementById("mobileNav");
+      sideNav.innerHTML = items.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + '</span>' + (item.page === "approvals" && state.role !== "Pengguna" ? '<span class="badge rounded-pill text-bg-danger ms-auto">2</span>' : "") + "</button>").join("");
+      const mobileItems = items.slice(0, 4);
+      mobileNav.innerHTML = mobileItems.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label.split(" ")[0] + "</span></button>").join("");
+      sideNav.querySelectorAll("[data-page], #sideNav button").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
+      mobileNav.querySelectorAll("[data-page]").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
+      document.querySelectorAll("[data-page]").forEach((button) => button.classList.toggle("active", button.dataset.page === state.currentPage));
+    }
+
+    function updateUserUI() {
+      const firstName = state.user.name.split(" ")[0];
+      const userInitials = initials(state.user.name);
+      ["sideAvatar", "topAvatar"].forEach((id) => document.getElementById(id).textContent = userInitials);
+      ["sideUserName", "topUserName"].forEach((id) => document.getElementById(id).textContent = state.user.name);
+      ["sideUserRole", "topUserRole"].forEach((id) => document.getElementById(id).textContent = state.role);
+      document.getElementById("heroUserName").textContent = firstName;
+      document.getElementById("bookingName").value = state.user.name;
+      document.getElementById("bookingEmail").value = state.user.email;
+    }
+
+    function statusClass(status) {
+      return ({ "Aktif": "status-active", "Disetujui": "status-approved", "Menunggu": "status-pending", "Ditolak": "status-rejected", "Nonaktif": "status-inactive" }[status] || "status-inactive");
+    }
+
+    function renderDashboard() {
+      const mine = state.bookings.filter((booking) => booking.email === state.user.email);
+      document.getElementById("statRooms").textContent = state.rooms.filter((room) => room.status === "Aktif").length;
+      document.getElementById("statBookings").textContent = mine.length;
+      document.getElementById("statPending").textContent = mine.filter((booking) => booking.status === "Menunggu").length;
+      document.getElementById("statApproved").textContent = mine.filter((booking) => booking.status === "Disetujui").length;
+      document.getElementById("activityList").innerHTML = state.activities.map((activity) => '<div class="activity"><div class="activity-icon ' + activity.type + '"><i class="bi ' + activity.icon + '"></i></div><div><p>' + escapeHTML(activity.text) + '</p><time>' + escapeHTML(activity.time) + "</time></div></div>").join("");
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const month = state.calendarMonth;
+      document.getElementById("calendarMonthLabel").textContent = formatMonth(month).replace(/^./, (char) => char.toUpperCase());
+      const year = month.getFullYear();
+      const monthIndex = month.getMonth();
+      const firstDayOffset = (new Date(year, monthIndex, 1).getDay() + 6) % 7;
+      const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+      const previousDays = new Date(year, monthIndex, 0).getDate();
+      const cells = [];
+      for (let i = firstDayOffset - 1; i >= 0; i -= 1) cells.push({ day: previousDays - i, muted: true, key: "" });
+      for (let day = 1; day <= daysInMonth; day += 1) cells.push({ day, muted: false, key: year + "-" + pad(monthIndex + 1) + "-" + pad(day) });
+      while (cells.length < 42) cells.push({ day: cells.length - firstDayOffset - daysInMonth + 1, muted: true, key: "" });
+      const events = {};
+      state.bookings.forEach((booking) => {
+        if (!events[booking.date]) events[booking.date] = [];
+        events[booking.date].push(booking.status);
+      });
+      document.getElementById("calendarGrid").innerHTML = cells.map((cell) => {
+        const todayClass = cell.key === dateKey(today) ? " today" : "";
+        const marks = (events[cell.key] || []).slice(0, 3).map((status) => '<i class="calendar-dot ' + (status === "Menunggu" ? "pending" : status === "Disetujui" ? "" : "busy") + '"></i>').join("");
+        return '<div class="calendar-day' + (cell.muted ? " muted" : "") + todayClass + '"><span>' + cell.day + '</span><div>' + marks + "</div></div>";
+      }).join("");
+    }
+
+    function renderRooms() {
+      const query = (document.getElementById("roomSearch").value || "").toLowerCase();
+      const selectedStatus = document.getElementById("roomStatusFilter").value;
+      const filtered = state.rooms.filter((room) => (selectedStatus === "all" || room.status === selectedStatus) && (room.name.toLowerCase().includes(query) || room.id.toLowerCase().includes(query)));
+      document.getElementById("roomGrid").innerHTML = filtered.length ? filtered.map((room) => '<div class="col-md-6 col-xl-4"><div class="card-soft room-card"><div class="room-cover ' + room.type + '"><span class="room-status">' + (room.status === "Aktif" ? "Tersedia" : "Nonaktif") + '</span><div class="room-illustration"><i class="bi bi-door-open"></i></div></div><div class="room-body"><h3>' + escapeHTML(room.name) + '</h3><p>' + escapeHTML(room.desc) + '</p><div class="room-meta"><span><i class="bi bi-people"></i> Maks. ' + room.capacity + " orang</span>" + (room.status === "Aktif" ? '<button class="btn btn-brand py-2 px-3" type="button" data-book-room="' + room.id + '">Pilih</button>' : '<span class="status-pill status-inactive">Tidak aktif</span>') + "</div></div></div></div>").join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-search"></i><p>Ruangan yang dicari belum ditemukan.</p></div></div>';
+      document.querySelectorAll("[data-book-room]").forEach((button) => button.addEventListener("click", () => {
+        document.getElementById("bookingRoomId").dataset.roomId = button.dataset.bookRoom;
+        setPage("booking");
+      }));
+    }
+
+    function prepareBookingForm() {
+      updateUserUI();
+      const selectedId = document.getElementById("bookingRoomId").dataset.roomId;
+      const room = state.rooms.find((item) => item.id === selectedId) || state.rooms.find((item) => item.status === "Aktif");
+      if (room) {
+        document.getElementById("bookingRoomId").dataset.roomId = room.id;
+        document.getElementById("bookingRoomName").textContent = room.name;
+        document.getElementById("bookingRoomId").textContent = room.id + " · Kapasitas " + room.capacity + " orang";
+      }
+      const dateInput = document.getElementById("bookingDate");
+      dateInput.min = dateKey(today);
+      if (!dateInput.value) dateInput.value = dateKey(addDays(1));
+      if (!document.getElementById("bookingStart").value) document.getElementById("bookingStart").value = "09:00";
+      if (!document.getElementById("bookingEnd").value) document.getElementById("bookingEnd").value = "10:00";
+      updateUserUI();
+    }
+
+    function bookingRow(booking, showOwner = false) {
+      const owner = showOwner ? '<div><strong>' + escapeHTML(booking.name) + '</strong><small class="d-block text-secondary">' + escapeHTML(booking.email) + "</small></div>" : "";
+      return "<tr><td><strong>" + escapeHTML(booking.id) + "</strong></td><td>" + (showOwner ? owner : escapeHTML(booking.roomName)) + "</td><td>" + (showOwner ? escapeHTML(booking.roomName) : formatDate(booking.date) + '<small class="d-block text-secondary">' + booking.start + "–" + booking.end + "</small>") + "</td><td>" + escapeHTML(booking.approver) + '</td><td><span class="status-pill ' + statusClass(booking.status) + '">' + escapeHTML(booking.status) + "</span></td><td><button class=\"btn btn-light-soft py-1 px-2\" type=\"button\" data-view-booking=\"" + booking.id + "\"><i class=\"bi bi-eye\"></i></button></td></tr>";
+    }
+
+    function renderMyBookings() {
+      const mine = state.bookings.filter((booking) => booking.email === state.user.email).sort((a, b) => a.date.localeCompare(b.date));
+      document.getElementById("myBookingsTable").innerHTML = mine.length ? mine.map((booking) => bookingRow(booking)).join("") : '<tr><td colspan="6"><div class="empty-state"><i class="bi bi-calendar-x"></i><p>Belum ada pengajuan peminjaman.</p></div></td></tr>';
+      bindBookingViewButtons();
+    }
+
+    function renderApprovals() {
+      const list = state.role === "Admin" ? state.bookings.filter((booking) => booking.status === "Menunggu") : state.bookings.filter((booking) => booking.status === "Menunggu" && booking.approverEmail === state.user.email);
+      document.getElementById("approvalCount").textContent = list.length + " pengajuan";
+      document.getElementById("approvalList").innerHTML = list.length ? list.map((booking) => '<div class="col-lg-6"><div class="card-soft p-3 h-100"><div class="d-flex justify-content-between gap-2"><div><div class="eyebrow mb-1">' + escapeHTML(booking.id) + '</div><h3 class="section-title fs-6">' + escapeHTML(booking.roomName) + '</h3></div><span class="status-pill status-pending">Menunggu</span></div><div class="row g-2 mt-2 mb-3"><div class="col-6"><small class="text-secondary d-block">Peminjam</small><strong class="small">' + escapeHTML(booking.name) + '</strong></div><div class="col-6"><small class="text-secondary d-block">Tanggal</small><strong class="small">' + formatDate(booking.date) + '</strong></div><div class="col-6"><small class="text-secondary d-block">Waktu</small><strong class="small">' + booking.start + "–" + booking.end + '</strong></div><div class="col-6"><small class="text-secondary d-block">Peserta</small><strong class="small">' + booking.participants + " orang</strong></div></div><div class=\"alert-soft mb-3\">" + escapeHTML(booking.purpose) + '</div><div class="d-flex gap-2"><button class="btn btn-light-soft flex-fill" type="button" data-reject-booking="' + booking.id + '">Tolak</button><button class="btn btn-brand flex-fill" type="button" data-approve-booking="' + booking.id + '">Setujui</button></div></div></div>').join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-check2-circle"></i><p>Tidak ada pengajuan yang menunggu persetujuan.</p></div></div>';
+      document.querySelectorAll("[data-approve-booking]").forEach((button) => button.addEventListener("click", () => changeBookingStatus(button.dataset.approveBooking, "Disetujui")));
+      document.querySelectorAll("[data-reject-booking]").forEach((button) => button.addEventListener("click", () => changeBookingStatus(button.dataset.rejectBooking, "Ditolak")));
+    }
+
+    function changeBookingStatus(id, status) {
+      const booking = state.bookings.find((item) => item.id === id);
+      if (!booking) return;
+      booking.status = status;
+      state.notifications.unshift({ icon: status === "Disetujui" ? "bi-check-circle" : "bi-x-circle", text: "Pengajuan " + booking.id + " telah " + status.toLowerCase() + ".", time: "Baru saja", read: false });
+      state.activities.unshift({ type: status === "Disetujui" ? "green" : "orange", icon: status === "Disetujui" ? "bi-check-circle" : "bi-x-circle", text: "Pengajuan " + booking.id + " " + status.toLowerCase() + ".", time: "Baru saja" });
+      renderAll();
+      showToast("Status " + booking.id + " diubah menjadi " + status + ".", "Pembaruan tersimpan", status === "Disetujui" ? "success" : "warning");
+    }
+
+    function renderAdmin() {
+      const users = [
+        { name: "Fitri Demo", email: "fitri@contoh.com", dept: "Human Capital", role: "Pengguna", status: "Aktif" },
+        { name: "Siti Rahma", email: "penyetuju1@contoh.com", dept: "Operasional", role: "Penyetuju", status: "Aktif" },
+        { name: "Andi Saputra", email: "penyetuju2@contoh.com", dept: "Finance", role: "Penyetuju", status: "Aktif" },
+        { name: "Rina Wijaya", email: "rina@contoh.com", dept: "Marketing", role: "Pengguna", status: "Menunggu" }
+      ];
+      document.getElementById("usersTable").innerHTML = users.map((user) => '<tr><td><strong>' + escapeHTML(user.name) + '</strong></td><td>' + escapeHTML(user.email) + '</td><td>' + escapeHTML(user.dept) + '</td><td>' + escapeHTML(user.role) + '</td><td><span class="status-pill ' + statusClass(user.status) + '">' + escapeHTML(user.status) + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-action="' + user.email + '"><i class="bi bi-three-dots"></i></button></td></tr>').join("");
+      document.getElementById("adminRoomsTable").innerHTML = state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + statusClass(room.status) + '">' + (room.status === "Aktif" ? "Aktif" : "Nonaktif") + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '"><i class="bi bi-pencil"></i></button></td></tr>').join("");
+      document.getElementById("allBookingsTable").innerHTML = state.bookings.map((booking) => bookingRow(booking, true)).join("");
+      bindBookingViewButtons();
+      document.querySelectorAll("[data-admin-action], [data-admin-room]").forEach((button) => button.addEventListener("click", () => showToast("Fungsi pengelolaan akan terhubung ke Google Sheet pada tahap berikutnya.", "Panel Admin", "info")));
+    }
+
+    function bindBookingViewButtons() {
+      document.querySelectorAll("[data-view-booking]").forEach((button) => button.addEventListener("click", () => {
+        const booking = state.bookings.find((item) => item.id === button.dataset.viewBooking);
+        if (booking) showToast(booking.roomName + " · " + formatDate(booking.date) + " · " + booking.start + "–" + booking.end, booking.id, "info");
+      }));
+    }
+
+    function renderNotifications() {
+      const unread = state.notifications.filter((notice) => !notice.read).length;
+      const badge = document.getElementById("notificationBadge");
+      badge.textContent = unread;
+      badge.classList.toggle("d-none", unread === 0);
+      document.getElementById("notificationList").innerHTML = state.notifications.slice(0, 5).map((notice) => '<div class="notification-item"><div class="notice-icon"><i class="bi ' + notice.icon + '"></i></div><div><p>' + escapeHTML(notice.text) + '</p><time>' + escapeHTML(notice.time) + "</time></div></div>").join("") || '<div class="empty-state py-4"><p>Belum ada notifikasi.</p></div>';
+    }
+
+    function renderAll() {
+      updateUserUI();
+      renderNav();
+      renderDashboard();
+      renderRooms();
+      renderMyBookings();
+      renderApprovals();
+      renderAdmin();
+      renderNotifications();
+    }
+
+    async function syncData() {
+      const syncText = document.getElementById("syncText");
+      if (!CONFIG.API_URL) {
+        syncText.textContent = "Mode pratinjau";
+        return;
+      }
+      syncText.textContent = "Menyinkronkan...";
+      try {
+        const response = await fetch(CONFIG.API_URL + "?action=bootstrap", { method: "GET" });
+        if (!response.ok) throw new Error("Gagal mengambil data");
+        const data = await response.json();
+        if (Array.isArray(data.rooms)) state.rooms = data.rooms;
+        if (Array.isArray(data.bookings)) state.bookings = data.bookings;
+        syncText.textContent = "Tersinkron " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+        renderAll();
+      } catch (error) {
+        syncText.textContent = "Sinkronisasi gagal";
+        showToast("Data terbaru belum dapat diambil. Periksa alamat penghubung.", "Koneksi belum siap", "warning");
+      }
+    }
+
+    function enterApp(role = "Pengguna") {
+      state.role = role;
+      document.getElementById("loginView").classList.add("d-none-important");
+      document.getElementById("registrationView").classList.add("d-none-important");
+      document.getElementById("appShell").classList.remove("d-none-important");
+      renderAll();
+      setPage("dashboard");
+    }
+
+    function logout() {
+      document.getElementById("appShell").classList.add("d-none-important");
+      document.getElementById("registrationView").classList.add("d-none-important");
+      document.getElementById("loginView").classList.remove("d-none-important");
+      showToast("Kamu sudah keluar dari aplikasi.", "Sampai jumpa", "info");
+    }
+
+    document.addEventListener("click", (event) => {
+      const pageButton = event.target.closest("[data-page]");
+      if (pageButton) {
+        event.preventDefault();
+        setPage(pageButton.dataset.page);
+      }
+      const demoRoleButton = event.target.closest("[data-demo-role]");
+      if (demoRoleButton) {
+        enterApp(demoRoleButton.dataset.demoRole);
+        showToast("Tampilan diubah ke mode " + demoRoleButton.dataset.demoRole + ".", "Pratinjau", "info");
+      }
+    });
+
+    document.getElementById("googleLoginBtn").addEventListener("click", () => {
+      if (!CONFIG.API_URL) {
+        showToast("Google Sign-In akan diaktifkan setelah penghubung Google Sheet dipasang.", "Tahap berikutnya", "info");
+        return;
+      }
+      showToast("Memulai login Google...", "Login", "info");
+    });
+    document.getElementById("previewBtn").addEventListener("click", () => enterApp("Pengguna"));
+    document.getElementById("backToLoginBtn").addEventListener("click", () => {
+      document.getElementById("registrationView").classList.add("d-none-important");
+      document.getElementById("loginView").classList.remove("d-none-important");
+    });
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+    document.getElementById("dropdownLogoutBtn").addEventListener("click", logout);
+    document.getElementById("pendingLogoutBtn").addEventListener("click", logout);
+    document.getElementById("notificationBtn").addEventListener("click", (event) => {
+      event.stopPropagation();
+      document.getElementById("notificationPanel").classList.toggle("show");
+    });
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest("#notificationPanel") && !event.target.closest("#notificationBtn")) document.getElementById("notificationPanel").classList.remove("show");
+    });
+    document.getElementById("markReadBtn").addEventListener("click", () => {
+      state.notifications.forEach((notice) => notice.read = true);
+      renderNotifications();
+      document.getElementById("notificationPanel").classList.remove("show");
+    });
+    document.getElementById("prevMonthBtn").addEventListener("click", () => {
+      state.calendarMonth = new Date(state.calendarMonth.getFullYear(), state.calendarMonth.getMonth() - 1, 1);
+      renderCalendar();
+    });
+    document.getElementById("nextMonthBtn").addEventListener("click", () => {
+      state.calendarMonth = new Date(state.calendarMonth.getFullYear(), state.calendarMonth.getMonth() + 1, 1);
+      renderCalendar();
+    });
+    document.getElementById("roomSearch").addEventListener("input", renderRooms);
+    document.getElementById("roomStatusFilter").addEventListener("change", renderRooms);
+    document.querySelectorAll("[data-admin-tab]").forEach((button) => button.addEventListener("click", () => {
+      document.querySelectorAll("[data-admin-tab]").forEach((tab) => tab.classList.remove("active"));
+      document.querySelectorAll(".admin-panel").forEach((panel) => panel.classList.add("d-none"));
+      button.classList.add("active");
+      document.getElementById("admin" + button.dataset.adminTab.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("")).classList.remove("d-none");
+    }));
+    document.getElementById("registrationForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const role = document.getElementById("registerRole").value;
+      document.getElementById("registrationView").classList.add("d-none-important");
+      document.getElementById("appShell").classList.remove("d-none-important");
+      if (role === "Pengguna") enterApp("Pengguna");
+      else setPage("pending");
+      showToast(role === "Pengguna" ? "Akun Pengguna langsung aktif." : "Pendaftaran dikirim dan menunggu Admin.", "Pendaftaran diterima", role === "Pengguna" ? "success" : "info");
+    });
+    document.getElementById("bookingForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = document.getElementById("bookingName").value.trim();
+      const roomId = document.getElementById("bookingRoomId").dataset.roomId;
+      const room = state.rooms.find((item) => item.id === roomId);
+      const date = document.getElementById("bookingDate").value;
+      const start = document.getElementById("bookingStart").value;
+      const end = document.getElementById("bookingEnd").value;
+      const approverValue = document.getElementById("bookingApprover").value;
+      if (name.toLowerCase() !== state.user.name.toLowerCase()) {
+        showToast("Nama harus sama dengan nama saat mendaftar.", "Nama tidak sesuai", "danger");
+        return;
+      }
+      if (!room) {
+        showToast("Pilih ruangan terlebih dahulu.", "Ruangan belum dipilih", "warning");
+        return;
+      }
+      if (end <= start) {
+        showToast("Waktu selesai harus lebih besar dari waktu mulai.", "Waktu tidak valid", "warning");
+        return;
+      }
+      if (!approverValue) {
+        showToast("Pilih salah satu penyetuju.", "Penyetuju belum dipilih", "warning");
+        return;
+      }
+      const approverParts = approverValue.split("|");
+      const newBooking = {
+        id: "PMJ-" + String(state.bookings.length + 1).padStart(3, "0"),
+        email: state.user.email,
+        name,
+        roomId: room.id,
+        roomName: room.name,
+        date,
+        start,
+        end,
+        purpose: document.getElementById("bookingPurpose").value.trim(),
+        participants: Number(document.getElementById("bookingParticipants").value),
+        approverEmail: approverParts[0],
+        approver: approverParts[1],
+        status: state.role === "Admin" ? "Disetujui" : "Menunggu",
+        note: "",
+        submitted: dateKey(today)
+      };
+      state.bookings.unshift(newBooking);
+      state.notifications.unshift({ icon: "bi-send", text: "Pengajuan " + newBooking.id + " berhasil dikirim.", time: "Baru saja", read: false });
+      state.activities.unshift({ type: "orange", icon: "bi-send", text: "Pengajuan " + newBooking.id + " berhasil dibuat.", time: "Baru saja" });
+      event.target.reset();
+      prepareBookingForm();
+      renderAll();
+      setPage("my-bookings");
+      showToast("Pengajuan berhasil dikirim.", "Pengajuan tersimpan", "success");
+    });
+
+    renderAll();
+    setInterval(syncData, CONFIG.POLL_MS);
+  </script>
+</body>
+</html>
