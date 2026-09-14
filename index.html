@@ -840,6 +840,18 @@
     function changeBookingStatus(id, status) {
       const booking = state.bookings.find((item) => item.id === id);
       if (!booking) return;
+      if (isAppsScriptPage()) {
+        callServer("setBookingStatus", { id: id, status: status, note: "" })
+          .then(function(result) {
+            if (!result || result.ok === false) throw new Error((result && result.error) || "Status belum tersimpan.");
+            showToast(result.message || "Status berhasil diperbarui.", "Pembaruan tersimpan", status === "Disetujui" ? "success" : "warning");
+            return syncData();
+          })
+          .catch(function(error) {
+            showToast(error.message || "Status belum tersimpan.", "Gagal menyimpan", "danger");
+          });
+        return;
+      }
       booking.status = status;
       state.notifications.unshift({ icon: status === "Disetujui" ? "bi-check-circle" : "bi-x-circle", text: "Pengajuan " + booking.id + " telah " + status.toLowerCase() + ".", time: "Baru saja", read: false });
       state.activities.unshift({ type: status === "Disetujui" ? "green" : "orange", icon: status === "Disetujui" ? "bi-check-circle" : "bi-x-circle", text: "Pengajuan " + booking.id + " " + status.toLowerCase() + ".", time: "Baru saja" });
@@ -848,7 +860,7 @@
     }
 
     function renderAdmin() {
-      const users = [
+      const users = Array.isArray(state.users) && state.users.length ? state.users : [
         { name: "Fitri Demo", email: "fitri@contoh.com", dept: "Human Capital", role: "Pengguna", status: "Aktif" },
         { name: "Siti Rahma", email: "penyetuju1@contoh.com", dept: "Operasional", role: "Penyetuju", status: "Aktif" },
         { name: "Andi Saputra", email: "penyetuju2@contoh.com", dept: "Finance", role: "Penyetuju", status: "Aktif" },
@@ -887,8 +899,142 @@
       renderNotifications();
     }
 
+    function isAppsScriptPage() {
+      return typeof google !== "undefined" && google.script && google.script.run;
+    }
+
+    function callServer(method, payload) {
+      return new Promise(function(resolve, reject) {
+        if (!isAppsScriptPage()) {
+          reject(new Error("Aplikasi belum dibuka melalui Google Apps Script."));
+          return;
+        }
+        const runner = google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject);
+        if (typeof payload === "undefined") runner[method]();
+        else runner[method](payload);
+      });
+    }
+
+    function setUserFromLive(user) {
+      state.user = {
+        email: user.Email || "",
+        name: user.Nama || "",
+        dept: user.Dept || "",
+        role: user.Role || "Pengguna",
+        status: user.Status || ""
+      };
+      state.role = state.user.role;
+    }
+
+    function mapLiveRoom(room, index) {
+      const oldRoom = state.rooms.find(function(item) { return item.id === room.ID; });
+      const types = ["green", "orange", "blue", "pink", "purple"];
+      return {
+        id: room.ID,
+        name: room.NamaRuangan,
+        status: room.Status,
+        desc: room.Deskripsi || "Ruangan siap digunakan untuk kegiatan internal.",
+        type: oldRoom ? oldRoom.type : types[index % types.length],
+        capacity: oldRoom ? oldRoom.capacity : 30
+      };
+    }
+
+    function mapLiveBooking(booking) {
+      return {
+        id: booking.ID,
+        email: booking.EmailPeminjam,
+        name: booking.NamaPeminjam,
+        roomId: booking.IDRuangan,
+        roomName: booking.NamaRuangan,
+        date: booking.Tanggal,
+        start: booking.WaktuMulai,
+        end: booking.WaktuSelesai,
+        purpose: booking.Tujuan,
+        participants: booking.JumlahPeserta,
+        approverEmail: booking.PenyetujuEmail,
+        approver: booking.PenyetujuNama,
+        status: booking.Status,
+        note: booking.CatatanPenyetuju,
+        submitted: booking.TanggalPengajuan
+      };
+    }
+
+    function showLiveRegistration(email) {
+      document.getElementById("loginView").classList.add("d-none-important");
+      document.getElementById("appShell").classList.add("d-none-important");
+      document.getElementById("registrationView").classList.remove("d-none-important");
+      const emailInput = document.getElementById("registerEmail");
+      emailInput.value = email || "";
+      emailInput.readOnly = true;
+    }
+
+    function showLivePending() {
+      document.getElementById("loginView").classList.add("d-none-important");
+      document.getElementById("registrationView").classList.add("d-none-important");
+      document.getElementById("appShell").classList.remove("d-none-important");
+      renderAll();
+      setPage("pending");
+    }
+
+    function applyBootstrapData(data) {
+      if (!data || data.ok === false) throw new Error((data && data.error) || "Data aplikasi tidak dapat dibaca.");
+
+      if (!data.registered) {
+        showLiveRegistration(data.user && data.user.Email);
+        return;
+      }
+
+      setUserFromLive(data.user || {});
+      if (!data.canUse) {
+        showLivePending();
+        return;
+      }
+
+      state.rooms = Array.isArray(data.rooms) ? data.rooms.map(mapLiveRoom) : state.rooms;
+      state.bookings = Array.isArray(data.bookings) ? data.bookings.map(mapLiveBooking) : [];
+      state.notifications = Array.isArray(data.notifications) ? data.notifications : [];
+      if (Array.isArray(data.users)) {
+        state.users = data.users.map(function(user) {
+          return {
+            name: user.Nama,
+            email: user.Email,
+            dept: user.Dept,
+            role: user.Role,
+            status: user.Status
+          };
+        });
+      }
+
+      const appVisible = !document.getElementById("appShell").classList.contains("d-none-important");
+      if (!appVisible) enterApp(state.role);
+      else renderAll();
+    }
+
+    function loadLiveSession() {
+      if (!isAppsScriptPage()) return;
+      callServer("getBootstrap")
+        .then(applyBootstrapData)
+        .catch(function(error) {
+          showToast(error.message || "Tidak dapat membaca akun Google.", "Login belum siap", "danger");
+        });
+    }
+
     async function syncData() {
       const syncText = document.getElementById("syncText");
+      if (isAppsScriptPage()) {
+        syncText.textContent = "Menyinkronkan...";
+        try {
+          const data = await callServer("getBootstrap");
+          applyBootstrapData(data);
+          syncText.textContent = "Tersinkron " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+        } catch (error) {
+          syncText.textContent = "Sinkronisasi gagal";
+          showToast(error.message || "Data terbaru belum dapat diambil.", "Koneksi belum siap", "warning");
+        }
+        return;
+      }
       if (!CONFIG.API_URL) {
         syncText.textContent = "Mode pratinjau";
         return;
@@ -938,8 +1084,12 @@
     });
 
     document.getElementById("googleLoginBtn").addEventListener("click", () => {
+      if (isAppsScriptPage()) {
+        loadLiveSession();
+        return;
+      }
       if (!CONFIG.API_URL) {
-        showToast("Google Sign-In akan diaktifkan setelah penghubung Google Sheet dipasang.", "Tahap berikutnya", "info");
+        showToast("Google Sign-In akan aktif saat aplikasi dibuka melalui Google Apps Script.", "Tahap berikutnya", "info");
         return;
       }
       showToast("Memulai login Google...", "Login", "info");
@@ -963,6 +1113,7 @@
       state.notifications.forEach((notice) => notice.read = true);
       renderNotifications();
       document.getElementById("notificationPanel").classList.remove("show");
+      if (isAppsScriptPage()) callServer("markNotificationsRead").catch(function() {});
     });
     document.getElementById("prevMonthBtn").addEventListener("click", () => {
       state.calendarMonth = new Date(state.calendarMonth.getFullYear(), state.calendarMonth.getMonth() - 1, 1);
@@ -983,6 +1134,27 @@
     document.getElementById("registrationForm").addEventListener("submit", (event) => {
       event.preventDefault();
       const role = document.getElementById("registerRole").value;
+      if (isAppsScriptPage()) {
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        callServer("registerUser", {
+          name: document.getElementById("registerName").value.trim(),
+          dept: document.getElementById("registerDept").value.trim(),
+          role: role
+        }).then(function(result) {
+          if (!result || result.ok === false) throw new Error((result && result.error) || "Pendaftaran gagal.");
+          setUserFromLive(result.user || {});
+          document.getElementById("registrationView").classList.add("d-none-important");
+          if (result.canUse) enterApp(state.role);
+          else showLivePending();
+          showToast(result.message || "Pendaftaran berhasil.", "Pendaftaran diterima", result.canUse ? "success" : "info");
+        }).catch(function(error) {
+          showToast(error.message || "Pendaftaran gagal.", "Gagal mendaftar", "danger");
+        }).finally(function() {
+          submitButton.disabled = false;
+        });
+        return;
+      }
       document.getElementById("registrationView").classList.add("d-none-important");
       document.getElementById("appShell").classList.remove("d-none-important");
       if (role === "Pengguna") enterApp("Pengguna");
@@ -1015,6 +1187,34 @@
         return;
       }
       const approverParts = approverValue.split("|");
+      if (isAppsScriptPage()) {
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        callServer("createBooking", {
+          name: name,
+          roomId: roomId,
+          date: date,
+          start: start,
+          end: end,
+          purpose: document.getElementById("bookingPurpose").value.trim(),
+          participants: Number(document.getElementById("bookingParticipants").value),
+          approverEmail: approverParts[0],
+          approverName: approverParts[1]
+        }).then(function(result) {
+          if (!result || result.ok === false) throw new Error((result && result.error) || "Pengajuan gagal disimpan.");
+          event.target.reset();
+          prepareBookingForm();
+          showToast(result.message || "Pengajuan berhasil dikirim.", "Pengajuan tersimpan", "success");
+          return syncData();
+        }).then(function() {
+          setPage("my-bookings");
+        }).catch(function(error) {
+          showToast(error.message || "Pengajuan gagal disimpan.", "Gagal mengirim", "danger");
+        }).finally(function() {
+          submitButton.disabled = false;
+        });
+        return;
+      }
       const newBooking = {
         id: "PMJ-" + String(state.bookings.length + 1).padStart(3, "0"),
         email: state.user.email,
@@ -1043,6 +1243,7 @@
     });
 
     renderAll();
+    loadLiveSession();
     setInterval(syncData, CONFIG.POLL_MS);
   </script>
 </body>
