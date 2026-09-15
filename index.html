@@ -313,6 +313,29 @@
     .custom-toast .toast-body { font-size: 12px; color: #62657e; }
     .custom-toast .toast-title { font-weight: 800; color: var(--ink); font-size: 12px; }
     .form-hint { color: #9698aa; font-size: 10px; margin-top: 6px; }
+    .approver-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .approver-option { display: block; position: relative; cursor: pointer; margin: 0; }
+    .approver-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .approver-card { display: flex; align-items: center; gap: 10px; min-height: 68px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 13px; background: #fff; transition: .2s ease; }
+    .approver-option:hover .approver-card { border-color: #b9baf0; background: #fafaff; transform: translateY(-1px); }
+    .approver-option input:focus-visible + .approver-card { outline: 3px solid rgba(91,92,226,.18); outline-offset: 2px; }
+    .approver-option input:checked + .approver-card { border-color: var(--brand); background: #f1f1ff; box-shadow: 0 0 0 3px rgba(91,92,226,.09); }
+    .approver-avatar { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; color: #fff; background: linear-gradient(135deg,#7778f1,#4e4fc5); font-size: 11px; font-weight: 800; }
+    .approver-copy { min-width: 0; flex: 1 1 auto; }
+    .approver-copy strong, .approver-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .approver-copy strong { color: var(--ink); font-size: 11px; }
+    .approver-copy small { color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .approver-check { color: var(--brand); opacity: 0; font-size: 17px; }
+    .approver-option input:checked + .approver-card .approver-check { opacity: 1; }
+    .booking-row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .return-btn { color: var(--brand); border-color: #c9caf0; }
+    .status-returned { color: #5570a8; background: #edf2ff; }
+    .wave-hand { display: inline-block; transform-origin: 70% 70%; animation: wave-hand 1.7s ease-in-out infinite; }
+    @keyframes wave-hand {
+      0%, 60%, 100% { transform: rotate(0deg); }
+      10%, 30% { transform: rotate(14deg); }
+      20%, 40% { transform: rotate(-8deg); }
+    }
     .sync-text { font-size: 10px; color: #a1a3b4; }
     .sync-dot { width: 6px; height: 6px; display: inline-block; border-radius: 50%; background: var(--success); margin-right: 5px; }
     .alert-soft { color: #5e6179; background: #f7f7fd; border: 1px solid #e8e8fa; border-radius: 12px; padding: 12px 14px; font-size: 11px; line-height: 1.6; }
@@ -338,6 +361,11 @@
       .hero h2 { font-size: 20px; max-width: 260px; }
       .hero p { font-size: 11px; max-width: 260px; }
       .calendar-card, .activity-card, .booking-form-card { padding: 17px; }
+      .approver-list { grid-template-columns: 1fr; }
+      .booking-room-preview { align-items: flex-start; flex-wrap: wrap; }
+      .booking-room-preview .btn { width: 100%; margin-left: 0 !important; }
+      .booking-actions { flex-direction: column-reverse; align-items: stretch !important; }
+      .booking-actions > * { width: 100%; }
       .calendar-day { min-height: 49px; padding: 5px; font-size: 10px; }
       .calendar-dot { width: 5px; height: 5px; }
       .table-card { overflow-x: auto; }
@@ -350,6 +378,8 @@
       .mobile-bottom-nav button { border: 0; background: transparent; color: #9a9caf; font-size: 9px; font-weight: 700; display: grid; place-items: center; gap: 2px; min-width: 61px; }
       .mobile-bottom-nav button i { font-size: 19px; }
       .mobile-bottom-nav button.active { color: var(--brand); }
+      .mobile-bottom-nav { justify-content: flex-start; gap: 5px; overflow-x: auto; }
+      .mobile-bottom-nav button { flex: 0 0 72px; min-width: 72px; }
       .notification-panel { position: fixed; top: 61px; right: 12px; width: min(330px, calc(100vw - 24px)); }
     }
   </style>
@@ -496,8 +526,8 @@
       <div class="content">
         <section id="page-dashboard" class="page active">
           <div class="hero mb-4">
-            <div class="eyebrow text-white-50 mb-2">Selamat datang kembali</div>
-            <h2>Halo, <span id="heroUserName">Fitri</span> 👋</h2>
+            <div class="eyebrow text-white-50 mb-2">Selamat Datang !!</div>
+            <h2>Halo, <span id="heroUserName">Astra Motor Jakarta</span> <span class="wave-hand" role="img" aria-label="Tangan melambai">👋</span></h2>
             <p>Atur jadwal rapat dan gunakan ruangan yang sesuai kebutuhan tim kamu.</p>
             <button class="btn btn-white mt-2" type="button" data-page="booking"><i class="bi bi-plus-lg me-1"></i>Ajukan peminjaman</button>
           </div>
@@ -553,11 +583,11 @@
                 <div class="col-md-6"><label class="form-label" for="bookingDate">Tanggal</label><input id="bookingDate" class="form-control" type="date" required></div>
                 <div class="col-md-3"><label class="form-label" for="bookingStart">Waktu mulai</label><input id="bookingStart" class="form-control" type="time" required></div>
                 <div class="col-md-3"><label class="form-label" for="bookingEnd">Waktu selesai</label><input id="bookingEnd" class="form-control" type="time" required></div>
-                <div id="bookingApproverGroup" class="col-md-6"><label class="form-label" for="bookingApprover">Penyetuju</label><select id="bookingApprover" class="form-select" required><option value="">Pilih penyetuju</option></select></div>
+                <div id="bookingApproverGroup" class="col-12"><label class="form-label">Penyetuju</label><div id="bookingApproverOptions" class="approver-list" role="radiogroup" aria-label="Pilih penyetuju"></div><div class="form-hint">Pilih salah satu penyetuju aktif.</div></div>
                 <div class="col-md-6"><label class="form-label" for="bookingParticipants">Jumlah peserta</label><input id="bookingParticipants" class="form-control" type="number" min="1" placeholder="Contoh: 12" required></div>
                 <div class="col-12"><label class="form-label" for="bookingPurpose">Tujuan kegiatan</label><textarea id="bookingPurpose" class="form-control" rows="3" placeholder="Jelaskan keperluan peminjaman ruangan..." required></textarea></div>
               </div>
-              <div class="d-flex justify-content-end gap-2 mt-4"><button class="btn-light-soft" type="button" data-page="dashboard">Batal</button><button class="btn btn-brand" type="submit">Kirim pengajuan <i class="bi bi-send ms-1"></i></button></div>
+              <div class="booking-actions d-flex justify-content-end gap-2 mt-4"><button class="btn-light-soft" type="button" data-page="dashboard">Batal</button><button class="btn btn-brand" type="submit">Kirim pengajuan <i class="bi bi-send ms-1"></i></button></div>
             </form>
           </div>
         </section>
@@ -639,8 +669,9 @@
   <script>
     const CONFIG = {
       API_URL: "",
-      POLL_MS: 60000,
-      APP_NAME: "Peminjaman Ruangan"
+      POLL_MS: 20000,
+      APP_NAME: "Peminjaman Ruangan",
+      HERO_GREETING_NAME: "Astra Motor Jakarta"
     };
 
     const today = new Date();
@@ -669,6 +700,7 @@
       bookings: [],
       notifications: [],
       activities: [],
+      approvers: [],
       users: []
     };
 
@@ -744,7 +776,7 @@
       const sideNav = document.getElementById("sideNav");
       const mobileNav = document.getElementById("mobileNav");
       sideNav.innerHTML = items.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + '</span>' + (item.page === "approvals" && state.role !== "Pengguna" ? '<span class="badge rounded-pill text-bg-danger ms-auto">2</span>' : "") + "</button>").join("");
-      const mobileItems = items.slice(0, 4);
+      const mobileItems = items;
       mobileNav.innerHTML = mobileItems.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label.split(" ")[0] + "</span></button>").join("");
       sideNav.querySelectorAll("[data-page], #sideNav button").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
       mobileNav.querySelectorAll("[data-page]").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
@@ -757,7 +789,7 @@
       ["sideAvatar", "topAvatar"].forEach((id) => document.getElementById(id).textContent = userInitials);
       ["sideUserName", "topUserName"].forEach((id) => document.getElementById(id).textContent = state.user.name);
       ["sideUserRole", "topUserRole"].forEach((id) => document.getElementById(id).textContent = state.role);
-      document.getElementById("heroUserName").textContent = firstName;
+      document.getElementById("heroUserName").textContent = CONFIG.HERO_GREETING_NAME;
       document.getElementById("bookingName").value = state.user.name;
       document.getElementById("bookingEmail").value = state.user.email;
     }
@@ -767,7 +799,22 @@
     }
 
     function statusClass(status) {
-      return ({ "Aktif": "status-active", "Tersedia": "status-active", "Disetujui": "status-approved", "Menunggu": "status-pending", "Ditolak": "status-rejected", "Nonaktif": "status-inactive" }[status] || "status-inactive");
+      return ({ "Aktif": "status-active", "Tersedia": "status-active", "Disetujui": "status-approved", "Dikembalikan": "status-returned", "Menunggu": "status-pending", "Ditolak": "status-rejected", "Nonaktif": "status-inactive" }[status] || "status-inactive");
+    }
+
+    function bookingEndDate(booking) {
+      if (!booking || !booking.date || !booking.end) return null;
+      const endDate = new Date(booking.date + "T" + booking.end + ":00");
+      return Number.isNaN(endDate.getTime()) ? null : endDate;
+    }
+
+    function hasBookingEnded(booking) {
+      const endDate = bookingEndDate(booking);
+      return Boolean(endDate && Date.now() >= endDate.getTime());
+    }
+
+    function canReturnBooking(booking) {
+      return Boolean(booking && booking.status === "Disetujui" && hasBookingEnded(booking));
     }
 
     function renderDashboard() {
@@ -823,12 +870,10 @@
     function prepareBookingForm() {
       updateUserUI();
       const approverGroup = document.getElementById("bookingApproverGroup");
-      const approverSelect = document.getElementById("bookingApprover");
       const needsApprover = state.role !== "Admin";
-      if (approverGroup && approverSelect) {
-        approverGroup.classList.toggle("d-none", !needsApprover);
-        approverSelect.required = needsApprover;
-      }
+      if (approverGroup) approverGroup.classList.toggle("d-none", !needsApprover);
+      if (needsApprover) renderApprovers(state.approvers);
+
       const selectedId = document.getElementById("bookingRoomId").dataset.roomId;
       const room = state.rooms.find((item) => item.id === selectedId) || state.rooms.find((item) => isRoomAvailable(item.status));
       if (room) {
@@ -846,13 +891,17 @@
 
     function bookingRow(booking, showOwner = false) {
       const owner = showOwner ? '<div><strong>' + escapeHTML(booking.name) + '</strong><small class="d-block text-secondary">' + escapeHTML(booking.email) + "</small></div>" : "";
-      return "<tr><td><strong>" + escapeHTML(booking.id) + "</strong></td><td>" + (showOwner ? owner : escapeHTML(booking.roomName)) + "</td><td>" + (showOwner ? escapeHTML(booking.roomName) : formatDate(booking.date) + '<small class="d-block text-secondary">' + booking.start + "–" + booking.end + "</small>") + "</td><td>" + escapeHTML(booking.approver) + '</td><td><span class="status-pill ' + statusClass(booking.status) + '">' + escapeHTML(booking.status) + "</span></td><td><button class=\"btn btn-light-soft py-1 px-2\" type=\"button\" data-view-booking=\"" + booking.id + "\"><i class=\"bi bi-eye\"></i></button></td></tr>";
+      const returnButton = !showOwner && canReturnBooking(booking)
+        ? '<button class="btn btn-light-soft return-btn py-1 px-2" type="button" data-return-booking="' + escapeHTML(booking.id) + '"><i class="bi bi-arrow-return-left me-1"></i><span>Kembalikan ruangan</span></button>'
+        : "";
+      return "<tr><td><strong>" + escapeHTML(booking.id) + "</strong></td><td>" + (showOwner ? owner : escapeHTML(booking.roomName)) + "</td><td>" + (showOwner ? escapeHTML(booking.roomName) : formatDate(booking.date) + '<small class="d-block text-secondary">' + booking.start + "–" + booking.end + "</small>") + "</td><td>" + escapeHTML(booking.approver) + '</td><td><span class="status-pill ' + statusClass(booking.status) + '">' + escapeHTML(booking.status) + "</span></td><td><div class=\"booking-row-actions\"><button class=\"btn btn-light-soft py-1 px-2\" type=\"button\" data-view-booking=\"" + escapeHTML(booking.id) + "\"><i class=\"bi bi-eye\"></i></button>" + returnButton + "</div></td></tr>";
     }
 
     function renderMyBookings() {
       const mine = state.bookings.filter((booking) => booking.email === state.user.email).sort((a, b) => a.date.localeCompare(b.date));
       document.getElementById("myBookingsTable").innerHTML = mine.length ? mine.map((booking) => bookingRow(booking)).join("") : '<tr><td colspan="6"><div class="empty-state"><i class="bi bi-calendar-x"></i><p>Belum ada pengajuan peminjaman.</p></div></td></tr>';
       bindBookingViewButtons();
+      bindReturnBookingButtons();
     }
 
     function renderApprovals() {
@@ -971,6 +1020,38 @@
       }));
     }
 
+    function bindReturnBookingButtons() {
+      document.querySelectorAll("[data-return-booking]").forEach((button) => button.addEventListener("click", () => {
+        returnBooking(button.dataset.returnBooking, button);
+      }));
+    }
+
+    function returnBooking(id, button) {
+      const booking = state.bookings.find((item) => item.id === id);
+      if (!booking || !canReturnBooking(booking)) return;
+
+      if (button) button.disabled = true;
+      if (isAppsScriptPage()) {
+        callServer("returnBooking", { id: id })
+          .then(function(result) {
+            if (!result || result.ok === false) throw new Error((result && result.error) || "Ruangan belum dapat dikembalikan.");
+            showToast(result.message || "Ruangan berhasil dikembalikan.", "Pengembalian berhasil", "success");
+            return syncData();
+          })
+          .catch(function(error) {
+            showToast(error.message || "Ruangan belum dapat dikembalikan.", "Gagal mengembalikan", "danger");
+          })
+          .finally(function() {
+            if (button) button.disabled = false;
+          });
+        return;
+      }
+
+      booking.status = "Dikembalikan";
+      renderAll();
+      showToast("Ruangan " + booking.roomName + " berhasil dikembalikan.", "Pengembalian berhasil", "success");
+    }
+
     function renderNotifications() {
       const unread = state.notifications.filter((notice) => !notice.read).length;
       const badge = document.getElementById("notificationBadge");
@@ -1053,15 +1134,22 @@
     }
 
     function renderApprovers(approvers) {
-      const select = document.getElementById("bookingApprover");
-      if (!select) return;
+      const container = document.getElementById("bookingApproverOptions");
+      if (!container) return;
       const list = Array.isArray(approvers) ? approvers : [];
-      select.innerHTML = '<option value="">Pilih penyetuju</option>' + list.map(function(user) {
-        return '<option value="' + escapeHTML(user.Email) + '|' + escapeHTML(user.Nama) + '">' + escapeHTML(user.Nama) + '</option>';
-      }).join("");
+      const selected = container.querySelector('input[name="bookingApprover"]:checked');
+      const selectedValue = selected ? selected.value : "";
+
       if (!list.length) {
-        select.innerHTML = '<option value="">Belum ada penyetuju aktif</option>';
+        container.innerHTML = '<div class="alert-soft">Belum ada penyetuju aktif.</div>';
+        return;
       }
+
+      container.innerHTML = list.map(function(user) {
+        const value = String(user.Email || "") + "|" + String(user.Nama || "");
+        const checked = value === selectedValue ? " checked" : "";
+        return '<label class="approver-option"><input class="approver-radio" type="radio" name="bookingApprover" value="' + escapeHTML(value) + '"' + checked + ' required><span class="approver-card"><span class="approver-avatar">' + escapeHTML(initials(user.Nama)) + '</span><span class="approver-copy"><strong>' + escapeHTML(user.Nama) + '</strong><small>' + escapeHTML(user.Email) + '</small></span><i class="bi bi-check-circle-fill approver-check"></i></span></label>';
+      }).join("");
     }
 
     function showLiveRegistration(email) {
@@ -1098,7 +1186,8 @@
       state.rooms = Array.isArray(data.rooms) ? data.rooms.map(mapLiveRoom) : [];
       state.bookings = Array.isArray(data.bookings) ? data.bookings.map(mapLiveBooking) : [];
       state.notifications = Array.isArray(data.notifications) ? data.notifications : [];
-      renderApprovers(data.approvers || []);
+      state.approvers = Array.isArray(data.approvers) ? data.approvers : [];
+      renderApprovers(state.approvers);
       if (Array.isArray(data.users)) {
         state.users = data.users.map(function(user) {
           return {
@@ -1230,8 +1319,10 @@
           if (!result || result.ok === false) throw new Error((result && result.error) || "Pendaftaran gagal.");
           setUserFromLive(result.user || {});
           document.getElementById("registrationView").classList.add("d-none-important");
-          if (result.canUse) enterApp(state.role);
-          else showLivePending();
+          if (result.canUse) {
+            enterApp(state.role);
+            syncData();
+          } else showLivePending();
           showToast(result.message || "Pendaftaran berhasil.", "Pendaftaran diterima", result.canUse ? "success" : "info");
         }).catch(function(error) {
           showToast(error.message || "Pendaftaran gagal.", "Gagal mendaftar", "danger");
@@ -1250,7 +1341,8 @@
       const date = document.getElementById("bookingDate").value;
       const start = document.getElementById("bookingStart").value;
       const end = document.getElementById("bookingEnd").value;
-      const approverValue = document.getElementById("bookingApprover").value;
+      const selectedApprover = document.querySelector('input[name="bookingApprover"]:checked');
+      const approverValue = selectedApprover ? selectedApprover.value : "";
       if (name.toLowerCase() !== state.user.name.toLowerCase()) {
         showToast("Nama harus sama dengan nama saat mendaftar.", "Nama tidak sesuai", "danger");
         return;
