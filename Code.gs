@@ -18,7 +18,7 @@ const HEADERS = {
     "ID", "EmailPeminjam", "NamaPeminjam", "IDRuangan", "NamaRuangan",
     "Tanggal", "WaktuMulai", "WaktuSelesai", "Tujuan", "JumlahPeserta",
     "PenyetujuEmail", "PenyetujuNama", "Status", "CatatanPenyetuju",
-    "TanggalPengajuan", "StatusPersetujuan"
+    "TanggalPengajuan", "StatusPersetujuan", "DiperbaruiPada"
   ]
 };
 
@@ -95,7 +95,13 @@ function getCurrentUser() {
 function getBootstrap() {
   const email = getActiveEmail_();
   const user = findUserByEmail_(email);
+  const bookings = readBookings_();
   const rooms = readRooms_();
+
+  refreshRoomCurrentStatuses_(rooms, bookings);
+  const publicRooms = rooms.map(function(room) {
+    return publicRoom_(room, bookings);
+  });
 
   const approvers = readUsers_().filter(function(item) {
     return item.Role === "Penyetuju" && String(item.Status).toLowerCase() === "aktif";
@@ -107,9 +113,10 @@ function getBootstrap() {
       registered: false,
       canUse: false,
       user: { Email: email },
-      rooms: rooms,
+      rooms: publicRooms,
       bookings: [],
       notifications: [],
+      activities: [],
       approvers: []
     };
   }
@@ -121,14 +128,14 @@ function getBootstrap() {
       registered: true,
       canUse: false,
       user: publicUser_(user),
-      rooms: rooms,
+      rooms: publicRooms,
       bookings: [],
       notifications: [],
+      activities: [],
       approvers: approvers
     };
   }
 
-  const bookings = readBookings_();
   const visibleBookings = bookings.filter(function(booking) {
     return user.Role === "Admin" ||
       normalize_(booking.EmailPeminjam) === normalize_(email) ||
@@ -141,13 +148,15 @@ function getBootstrap() {
     registered: true,
     canUse: true,
     user: publicUser_(user),
-    rooms: rooms,
+    rooms: publicRooms,
     bookings: visibleBookings.map(publicBooking_),
     notifications: buildNotifications_(user, bookings),
+    activities: buildActivities_(user, visibleBookings),
     approvers: approvers,
     users: user.Role === "Admin" ? readUsers_().map(publicUser_) : []
   };
 }
+
 
 function registerUser(data) {
   const email = getActiveEmail_();
@@ -253,7 +262,8 @@ function createBooking(data) {
     throw new Error("Jadwal ruangan bentrok dengan peminjaman lain.");
   }
 
-  const id = "PMJ-" + Utilities.formatDate(new Date(), APP_CONFIG.TIME_ZONE, "yyyyMMdd-HHmmss");
+  const createdAt = new Date();
+  const id = "PMJ-" + Utilities.formatDate(createdAt, APP_CONFIG.TIME_ZONE, "yyyyMMdd-HHmmss");
   const status = user.Role === "Admin" ? "Disetujui" : "Menunggu";
   getSheet_(APP_CONFIG.SHEETS.BOOKINGS).appendRow([
     id,
@@ -270,8 +280,9 @@ function createBooking(data) {
     approverNames.join(", "),
     status,
     "",
-    new Date(),
-    JSON.stringify(approvalState)
+    createdAt,
+    JSON.stringify(approvalState),
+    createdAt
   ]);
 
   return {
@@ -295,7 +306,8 @@ function createBooking(data) {
       Status: status,
       CatatanPenyetuju: "",
       TanggalPengajuan: todayKey_(),
-      StatusPersetujuan: JSON.stringify(approvalState)
+      StatusPersetujuan: JSON.stringify(approvalState),
+      DiperbaruiPada: Utilities.formatDate(createdAt, APP_CONFIG.TIME_ZONE, "yyyy-MM-dd HH:mm:ss")
     }
   };
 }
@@ -376,6 +388,7 @@ function setBookingStatus(data) {
   sheet.getRange(rowNumber, 13).setValue(booking.Status);
   sheet.getRange(rowNumber, 14).setValue(note);
   sheet.getRange(rowNumber, 16).setValue(JSON.stringify(approvalState));
+  sheet.getRange(rowNumber, 17).setValue(new Date());
 
   let message = "Status " + id + " diubah menjadi " + booking.Status + ".";
   if (user.Role !== "Admin" && status === "Disetujui" && booking.Status === "Menunggu") {
@@ -426,6 +439,7 @@ function returnBooking(data) {
 
   booking.Status = "Dikembalikan";
   sheet.getRange(rowNumber, 13).setValue(booking.Status);
+  sheet.getRange(rowNumber, 17).setValue(new Date());
 
   return {
     ok: true,
@@ -559,12 +573,12 @@ function saveRoom(data) {
 
   for (let row = 1; row < values.length; row += 1) {
     if (String(values[row][0]).trim() === id) {
-      sheet.getRange(row + 1, 1, 1, 4).setValues([[id, name, status, description]]);
+      sheet.getRange(row + 1, 1, 1, 5).setValues([[id, name, status, description, status]]);
       return { ok: true, message: "Data ruangan diperbarui." };
     }
   }
 
-  sheet.appendRow([id, name, status, description]);
+  sheet.appendRow([id, name, status, description, status]);
   return { ok: true, message: "Ruangan baru ditambahkan." };
 }
 
@@ -725,6 +739,7 @@ function roomFromRow_(row, rowNumber) {
     NamaRuangan: clean_(row[1]),
     Status: clean_(row[2]),
     Deskripsi: clean_(row[3]),
+    StatusSaatIni: clean_(row[4]),
     _row: rowNumber
   };
 }
@@ -747,6 +762,7 @@ function bookingFromRow_(row, rowNumber) {
     CatatanPenyetuju: clean_(row[13]),
     TanggalPengajuan: dateValue_(row[14]),
     StatusPersetujuan: clean_(row[15]),
+    DiperbaruiPada: dateTimeValue_(row[16]),
     _row: rowNumber
   };
 }
@@ -779,8 +795,117 @@ function publicBooking_(booking) {
     Status: booking.Status,
     CatatanPenyetuju: booking.CatatanPenyetuju,
     TanggalPengajuan: booking.TanggalPengajuan,
-    StatusPersetujuan: booking.StatusPersetujuan
+    StatusPersetujuan: booking.StatusPersetujuan,
+    DiperbaruiPada: booking.DiperbaruiPada
   };
+}
+
+function publicRoom_(room, bookings) {
+  const current = currentBookingForRoom_(room.ID, bookings);
+  const effectiveStatus = current
+    ? "Dipinjam"
+    : (room.StatusSaatIni || room.Status);
+
+  return {
+    ID: room.ID,
+    NamaRuangan: room.NamaRuangan,
+    Status: room.Status,
+    StatusSaatIni: effectiveStatus,
+    Deskripsi: room.Deskripsi,
+    SedangDipinjam: Boolean(current),
+    PeminjamanAktif: current ? publicBooking_(current) : null
+  };
+}
+
+function currentBookingForRoom_(roomId, bookings) {
+  return (bookings || []).find(function(booking) {
+    return booking.IDRuangan === roomId && isBookingInProgress_(booking);
+  }) || null;
+}
+
+function isBookingInProgress_(booking) {
+  if (!booking || booking.Status !== "Disetujui") return false;
+
+  const startDate = bookingStartDate_(booking);
+  const endDate = bookingEndDate_(booking);
+  const now = new Date().getTime();
+
+  return Boolean(startDate && endDate &&
+    now >= startDate.getTime() &&
+    now < endDate.getTime());
+}
+
+function bookingStartDate_(booking) {
+  if (!booking || !booking.Tanggal || !booking.WaktuMulai) return null;
+
+  try {
+    return Utilities.parseDate(
+      booking.Tanggal + " " + booking.WaktuMulai,
+      APP_CONFIG.TIME_ZONE,
+      "yyyy-MM-dd HH:mm"
+    );
+  } catch (error) {
+    return null;
+  }
+}
+
+function dateTimeValue_(value) {
+  if (!value) return "";
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, APP_CONFIG.TIME_ZONE, "yyyy-MM-dd HH:mm:ss");
+  }
+
+  const text = String(value).trim();
+  if (/^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}(:\\d{2})?$/.test(text)) return text;
+
+  const parsed = new Date(text);
+  return isNaN(parsed.getTime())
+    ? text
+    : Utilities.formatDate(parsed, APP_CONFIG.TIME_ZONE, "yyyy-MM-dd HH:mm:ss");
+}
+
+function refreshRoomCurrentStatuses_(rooms, bookings) {
+  const sheet = getSheet_(APP_CONFIG.SHEETS.ROOMS);
+
+  (rooms || []).forEach(function(room) {
+    const current = currentBookingForRoom_(room.ID, bookings);
+    const desired = current ? "Dipinjam" : room.Status;
+
+    if (room.StatusSaatIni !== desired) {
+      sheet.getRange(room._row, 5).setValue(desired);
+    }
+    room.StatusSaatIni = desired;
+  });
+}
+
+function buildActivities_(user, bookings) {
+  const statusLabels = {
+    Menunggu: "menunggu persetujuan",
+    Disetujui: "disetujui",
+    Ditolak: "ditolak",
+    Dikembalikan: "dikembalikan"
+  };
+  const visual = {
+    Menunggu: { type: "orange", icon: "bi-hourglass-split" },
+    Disetujui: { type: "green", icon: "bi-check-circle" },
+    Ditolak: { type: "orange", icon: "bi-x-circle" },
+    Dikembalikan: { type: "blue", icon: "bi-arrow-return-left" }
+  };
+
+  return (bookings || []).slice().sort(function(a, b) {
+    const updatedA = String(a.DiperbaruiPada || a.TanggalPengajuan || "");
+    const updatedB = String(b.DiperbaruiPada || b.TanggalPengajuan || "");
+    return updatedB.localeCompare(updatedA) || Number(b._row || 0) - Number(a._row || 0);
+  }).slice(0, 8).map(function(booking) {
+    const owner = user.Role === "Admin" ? " oleh " + booking.NamaPeminjam : "";
+    const style = visual[booking.Status] || visual.Menunggu;
+    return {
+      type: style.type,
+      icon: style.icon,
+      text: "Peminjaman " + booking.ID + owner + " " + (statusLabels[booking.Status] || String(booking.Status).toLowerCase()) + " · " + booking.NamaRuangan + ".",
+      time: booking.DiperbaruiPada || booking.TanggalPengajuan || "Baru saja"
+    };
+  });
 }
 
 function buildNotifications_(user, bookings) {
