@@ -8,7 +8,7 @@ const APP_CONFIG = {
   },
   ROLES: ["Pengguna", "Penyetuju", "Admin"],
   USER_STATUSES: ["Menunggu", "Aktif", "Ditolak"],
-  BOOKING_STATUSES: ["Menunggu", "Disetujui", "Ditolak"]
+  BOOKING_STATUSES: ["Menunggu", "Disetujui", "Ditolak", "Dikembalikan"]
 };
 
 const HEADERS = {
@@ -347,6 +347,65 @@ function setBookingStatus(data) {
   };
 }
 
+
+function returnBooking(data) {
+  const email = getActiveEmail_();
+  const user = requireActiveUser_(email);
+  const id = clean_(data && data.id);
+
+  if (!id) throw new Error("ID peminjaman tidak valid.");
+
+  const sheet = getSheet_(APP_CONFIG.SHEETS.BOOKINGS);
+  const values = sheet.getDataRange().getValues();
+  let rowNumber = -1;
+  let booking = null;
+
+  for (let row = 1; row < values.length; row += 1) {
+    const item = bookingFromRow_(values[row], row + 1);
+    if (item.ID === id) {
+      rowNumber = row + 1;
+      booking = item;
+      break;
+    }
+  }
+
+  if (!booking) throw new Error("Data peminjaman tidak ditemukan.");
+  if (user.Role !== "Admin" && booking.EmailPeminjam !== email) {
+    throw new Error("Kamu tidak memiliki izin untuk mengembalikan ruangan ini.");
+  }
+  if (booking.Status !== "Disetujui") {
+    throw new Error("Hanya peminjaman yang sudah disetujui yang dapat dikembalikan.");
+  }
+
+  const endDate = bookingEndDate_(booking);
+  if (!endDate || new Date().getTime() < endDate.getTime()) {
+    throw new Error("Ruangan baru dapat dikembalikan setelah waktu peminjaman selesai.");
+  }
+
+  booking.Status = "Dikembalikan";
+  sheet.getRange(rowNumber, 13).setValue(booking.Status);
+
+  return {
+    ok: true,
+    message: "Ruangan " + booking.NamaRuangan + " berhasil dikembalikan.",
+    booking: publicBooking_(booking)
+  };
+}
+
+function bookingEndDate_(booking) {
+  if (!booking || !booking.Tanggal || !booking.WaktuSelesai) return null;
+
+  try {
+    return Utilities.parseDate(
+      booking.Tanggal + " " + booking.WaktuSelesai,
+      APP_CONFIG.TIME_ZONE,
+      "yyyy-MM-dd HH:mm"
+    );
+  } catch (error) {
+    return null;
+  }
+}
+
 function setUserStatus(data) {
   const admin = requireAdmin_();
   const email = clean_(data && data.email);
@@ -446,6 +505,8 @@ function routePost_(data) {
       return createBooking(data);
     case "setBookingStatus":
       return setBookingStatus(data);
+    case "returnBooking":
+      return returnBooking(data);
     case "setUserStatus":
       return setUserStatus(data);
     case "saveRoom":
