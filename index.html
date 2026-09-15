@@ -1279,7 +1279,48 @@
       }
     }
       /* Navigation readability v3 */
-    @media (max-width:1050px){html.phone-device .mobile-menu-btn{width:68px;height:68px;font-size:42px;border-radius:20px}html.phone-device #notificationBtn{width:58px;height:58px;font-size:29px}html.phone-device .top-avatar{width:50px;height:50px;font-size:18px}html.phone-device .mobile-bottom-nav{height:calc(118px + env(safe-area-inset-bottom));padding:14px 8px env(safe-area-inset-bottom)}html.phone-device .mobile-bottom-nav button{font-size:15px;font-weight:800;gap:8px}html.phone-device .mobile-bottom-nav button i{font-size:37px}html.phone-device .side-nav button{font-size:20px;padding:20px 18px;gap:18px}html.phone-device .side-nav button i{font-size:30px;width:32px}html.phone-device .page-heading h1{font-size:28px}}  </style>
+    @media (max-width:1050px){html.phone-device .mobile-menu-btn{width:68px;height:68px;font-size:42px;border-radius:20px}html.phone-device #notificationBtn{width:58px;height:58px;font-size:29px}html.phone-device .top-avatar{width:50px;height:50px;font-size:18px}html.phone-device .mobile-bottom-nav{height:calc(118px + env(safe-area-inset-bottom));padding:14px 8px env(safe-area-inset-bottom)}html.phone-device .mobile-bottom-nav button{font-size:15px;font-weight:800;gap:8px}html.phone-device .mobile-bottom-nav button i{font-size:37px}html.phone-device .side-nav button{font-size:20px;padding:20px 18px;gap:18px}html.phone-device .side-nav button i{font-size:30px;width:32px}html.phone-device .page-heading h1{font-size:28px}}  
+    /* Top notification toast */
+    .toast-container {
+      top: 86px !important;
+      bottom: auto !important;
+      z-index: 1090;
+      width: min(430px, calc(100vw - 24px));
+      padding: 12px !important;
+    }
+    .custom-toast {
+      width: 100%;
+      min-width: 340px;
+      border-radius: 18px;
+    }
+    .custom-toast .toast-body {
+      padding: 17px 18px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .custom-toast .toast-title { font-size: 16px; }
+    .custom-toast .toast-body > i { font-size: 23px !important; }
+    @media (max-width: 1050px) {
+      html.phone-device .toast-container {
+        top: calc(88px + env(safe-area-inset-top)) !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: auto;
+        padding: 0 !important;
+        transform: none;
+      }
+      html.phone-device .custom-toast {
+        min-width: 0;
+        border-radius: 20px;
+      }
+      html.phone-device .custom-toast .toast-body {
+        padding: 19px 18px;
+        font-size: 17px;
+      }
+      html.phone-device .custom-toast .toast-title { font-size: 18px; }
+      html.phone-device .custom-toast .toast-body > i { font-size: 26px !important; }
+    }
+  </style>
 </head>
 
 <body>
@@ -1584,7 +1625,7 @@
     </div>
   </div>
 
-  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div class="toast-container position-fixed top-0 end-0 p-3">
     <div id="appToast" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="toast-body d-flex align-items-start gap-2"><i id="toastIcon" class="bi bi-check-circle text-success fs-5"></i><div><div id="toastTitle" class="toast-title">Berhasil</div><div id="toastMessage">Perubahan berhasil disimpan.</div></div><button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Tutup"></button></div>
     </div>
