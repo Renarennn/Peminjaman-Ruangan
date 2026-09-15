@@ -387,7 +387,22 @@
       .mobile-bottom-nav button { flex: 0 0 100px; min-width: 100px; }
       .notification-panel { position: fixed; top: 61px; right: 12px; width: min(330px, calc(100vw - 24px)); }
     }
-  </style>
+  
+    @media (max-width: 767.98px) {
+      .main-area { padding-bottom: 90px; }
+      .content { padding: 22px 14px 36px; }
+      .topbar { padding: 0 14px; }
+      .hero { padding: 25px 20px; min-height: 215px; }
+      .hero h2 { font-size: 26px; line-height: 1.18; }
+      .section-title { font-size: 21px; line-height: 1.25; }
+      .form-label { font-size: 14px; }
+      .form-control, .form-select, textarea.form-control { font-size: 15px; min-height: 46px; }
+      .booking-form-card { padding: 18px 16px; }
+      .mobile-bottom-nav { height: 84px; justify-content: flex-start; gap: 6px; overflow-x: auto; padding: 9px 8px; }
+      .mobile-bottom-nav button { flex: 0 0 108px; min-width: 108px; font-size: 12px; }
+      .mobile-bottom-nav button i { font-size: 24px; }
+    }
+</style>
 </head>
 
 <body>
@@ -482,7 +497,10 @@
         <div class="mini-help">
           <i class="bi bi-headset fs-5"></i>
           <strong class="d-block mt-2 fs-6">Butuh bantuan?</strong>
-          <small>Hubungi Admin jika ada masalah pada pengajuan.</small>
+          <small>Hubungi Admin melalui WhatsApp.</small>
+          <a class="btn btn-white btn-sm w-100 mt-3" href="https://wa.me/6285156889002" target="_blank" rel="noopener">
+            <i class="bi bi-whatsapp me-1"></i>085156889002
+          </a>
         </div>
         <div class="sidebar-user">
           <div id="sideAvatar" class="avatar">-</div>
@@ -633,17 +651,18 @@
   <div class="modal fade" id="adminUserModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow">
-        <div class="modal-header"><h5 class="modal-title">Ubah status pengguna</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+        <div class="modal-header"><h5 id="adminUserModalTitle" class="modal-title">Tambah pengguna</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
         <div class="modal-body">
           <p id="adminUserSummary" class="small text-secondary mb-3"></p>
-          <label class="form-label" for="adminUserStatus">Status akun</label>
-          <select id="adminUserStatus" class="form-select">
-            <option value="Aktif">Aktif</option>
-            <option value="Menunggu">Menunggu</option>
-            <option value="Ditolak">Ditolak</option>
-          </select>
+          <div class="mb-3"><label class="form-label" for="adminUserEmail">Email Google</label><input id="adminUserEmail" class="form-control" type="email" placeholder="nama@astramotor.co.id" required></div>
+          <div class="mb-3"><label class="form-label" for="adminUserName">Nama lengkap</label><input id="adminUserName" class="form-control" type="text" required></div>
+          <div class="mb-3"><label class="form-label" for="adminUserDept">Departemen</label><input id="adminUserDept" class="form-control" type="text" placeholder="Contoh: HC3" required></div>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label" for="adminUserRole">Peran</label><select id="adminUserRole" class="form-select"><option value="Pengguna">Pengguna</option><option value="Penyetuju">Penyetuju</option><option value="Admin">Admin</option></select></div>
+            <div class="col-md-6"><label class="form-label" for="adminUserStatus">Status akun</label><select id="adminUserStatus" class="form-select"><option value="Aktif">Aktif</option><option value="Menunggu">Menunggu</option><option value="Ditolak">Ditolak</option></select></div>
+          </div>
         </div>
-        <div class="modal-footer"><button type="button" class="btn-light-soft" data-bs-dismiss="modal">Batal</button><button id="saveAdminUserBtn" type="button" class="btn btn-brand">Simpan</button></div>
+        <div class="modal-footer"><button type="button" class="btn-light-soft" data-bs-dismiss="modal">Batal</button><button id="saveAdminUserBtn" type="button" class="btn btn-brand">Simpan pengguna</button></div>
       </div>
     </div>
   </div>
@@ -705,7 +724,8 @@
       notifications: [],
       activities: [],
       approvers: [],
-      users: []
+      users: [],
+      notificationsInitialized: false
     };
 
     const roleMenus = {
@@ -718,6 +738,8 @@
       Penyetuju: [
         { page: "dashboard", icon: "bi-grid-1x2", label: "Dashboard" },
         { page: "rooms", icon: "bi-door-open", label: "Katalog Ruangan" },
+        { page: "booking", icon: "bi-plus-square", label: "Ajukan Peminjaman" },
+        { page: "my-bookings", icon: "bi-calendar2-check", label: "Peminjaman Saya" },
         { page: "approvals", icon: "bi-clipboard-check", label: "Menunggu Persetujuan" }
       ],
       Admin: [
@@ -775,16 +797,27 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
+    function sameEmail(a, b) {
+      return String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
+    }
+
+    function pendingApprovalsForCurrentUser() {
+      const email = String(state.user.email || "").trim().toLowerCase();
+      return state.bookings.filter((booking) => booking.status === "Menunggu" &&
+        (state.role === "Admin" || (booking.approverEmails || []).some((approverEmail) => String(approverEmail || "").trim().toLowerCase() === email)));
+    }
+
     function renderNav() {
       const items = roleMenus[state.role] || [];
       const sideNav = document.getElementById("sideNav");
       const mobileNav = document.getElementById("mobileNav");
-      const approvalCount = state.bookings.filter((booking) => booking.status === "Menunggu" && (state.role === "Admin" || (booking.approverEmails || []).includes(state.user.email))).length;
-      const approvalBadge = approvalCount ? '<span class="badge rounded-pill text-bg-danger ms-auto">' + approvalCount + '</span>' : "";
+      const approvalCount = pendingApprovalsForCurrentUser().length;
+      const approvalBadge = approvalCount
+        ? '<span class="badge rounded-pill text-bg-danger ms-auto">' + approvalCount + '</span>'
+        : "";
       sideNav.innerHTML = items.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + '</span>' + (item.page === "approvals" ? approvalBadge : "") + "</button>").join("");
-      const mobileItems = items;
-      mobileNav.innerHTML = mobileItems.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + "</span></button>").join("");
-      sideNav.querySelectorAll("[data-page], #sideNav button").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
+      mobileNav.innerHTML = items.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + "</span></button>").join("");
+      sideNav.querySelectorAll("[data-page]").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
       mobileNav.querySelectorAll("[data-page]").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
       document.querySelectorAll("[data-page]").forEach((button) => button.classList.toggle("active", button.dataset.page === state.currentPage));
     }
@@ -824,7 +857,7 @@
     }
 
     function renderDashboard() {
-      const mine = state.bookings.filter((booking) => booking.email === state.user.email);
+      const mine = state.bookings.filter((booking) => sameEmail(booking.email, state.user.email));
       document.getElementById("statRooms").textContent = state.rooms.filter((room) => isRoomAvailable(room.status)).length;
       document.getElementById("statBookings").textContent = mine.length;
       document.getElementById("statPending").textContent = mine.filter((booking) => booking.status === "Menunggu").length;
@@ -900,23 +933,22 @@
     }
 
     function renderMyBookings() {
-      const mine = state.bookings.filter((booking) => booking.email === state.user.email).sort((a, b) => a.date.localeCompare(b.date));
+      const mine = state.bookings.filter((booking) => sameEmail(booking.email, state.user.email)).sort((a, b) => a.date.localeCompare(b.date));
       document.getElementById("myBookingsTable").innerHTML = mine.length ? mine.map((booking) => bookingRow(booking)).join("") : '<tr><td colspan="6"><div class="empty-state"><i class="bi bi-calendar-x"></i><p>Belum ada pengajuan peminjaman.</p></div></td></tr>';
       bindBookingViewButtons();
       bindReturnBookingButtons();
     }
 
     function renderApprovals() {
-      const list = state.role === "Admin"
-        ? state.bookings.filter((booking) => booking.status === "Menunggu")
-        : state.bookings.filter((booking) => booking.status === "Menunggu" && (booking.approverEmails || []).includes(state.user.email));
+      const list = pendingApprovalsForCurrentUser();
       document.getElementById("approvalCount").textContent = list.length + " pengajuan";
       document.getElementById("approvalList").innerHTML = list.length ? list.map((booking) => {
         const approvers = booking.approverEmails || [];
         let approvalState = {};
         try { approvalState = JSON.parse(booking.approvalState || "{}") || {}; } catch (error) { approvalState = {}; }
-        const approvedCount = approvers.filter((email) => approvalState[email] === "Disetujui").length;
-        const alreadyApproved = state.role !== "Admin" && approvalState[state.user.email] === "Disetujui";
+        const approvedCount = approvers.filter((email) => approvalState[String(email).toLowerCase()] === "Disetujui").length;
+        const currentEmail = String(state.user.email || "").trim().toLowerCase();
+        const alreadyApproved = state.role !== "Admin" && approvalState[currentEmail] === "Disetujui";
         const approvalLabel = alreadyApproved ? "Sudah menyetujui" : "Setujui";
         const rejectButton = alreadyApproved
           ? '<button class="btn btn-light-soft flex-fill" type="button" disabled>Tersimpan</button>'
@@ -967,11 +999,33 @@
     }
 
     function openAdminUserEditor(email) {
-      const user = state.users.find((item) => item.email === email);
-      if (!user) return;
-      document.getElementById("adminUserSummary").textContent = user.name + " · " + user.email;
-      document.getElementById("adminUserStatus").value = user.status || "Menunggu";
-      document.getElementById("saveAdminUserBtn").dataset.email = user.email;
+      const isAdd = !email;
+      const user = state.users.find((item) => sameEmail(item.email, email));
+      if (!isAdd && !user) return;
+
+      const modalTitle = document.getElementById("adminUserModalTitle");
+      const emailInput = document.getElementById("adminUserEmail");
+      const nameInput = document.getElementById("adminUserName");
+      const deptInput = document.getElementById("adminUserDept");
+      const roleInput = document.getElementById("adminUserRole");
+      const statusInput = document.getElementById("adminUserStatus");
+      const saveButton = document.getElementById("saveAdminUserBtn");
+
+      saveButton.dataset.mode = isAdd ? "add" : "edit";
+      saveButton.dataset.email = isAdd ? "" : user.email;
+      modalTitle.textContent = isAdd ? "Tambah pengguna" : "Ubah pengguna";
+      emailInput.value = isAdd ? "" : user.email;
+      nameInput.value = isAdd ? "" : user.name;
+      deptInput.value = isAdd ? "" : user.dept;
+      roleInput.value = isAdd ? "Pengguna" : user.role;
+      statusInput.value = isAdd ? "Aktif" : (user.status || "Menunggu");
+      emailInput.readOnly = !isAdd;
+      nameInput.readOnly = !isAdd;
+      deptInput.readOnly = !isAdd;
+      roleInput.disabled = !isAdd;
+      document.getElementById("adminUserSummary").textContent = isAdd
+        ? "Admin dapat mendaftarkan email Google sebelum orang tersebut login pertama kali."
+        : "Data akun: " + user.name + " · " + user.email;
       bootstrap.Modal.getOrCreateInstance(document.getElementById("adminUserModal")).show();
     }
 
@@ -988,18 +1042,29 @@
 
     async function saveAdminUser() {
       const button = document.getElementById("saveAdminUserBtn");
+      const isAdd = button.dataset.mode === "add";
+      const email = document.getElementById("adminUserEmail").value.trim();
+      const name = document.getElementById("adminUserName").value.trim();
+      const dept = document.getElementById("adminUserDept").value.trim();
+      const role = document.getElementById("adminUserRole").value;
+      const status = document.getElementById("adminUserStatus").value;
+
+      if (isAdd && (!email || !name || !dept)) {
+        showToast("Email, nama, dan departemen wajib diisi.", "Data belum lengkap", "warning");
+        return;
+      }
+
       button.disabled = true;
       try {
-        const result = await callServer("setUserStatus", {
-          email: button.dataset.email,
-          status: document.getElementById("adminUserStatus").value
-        });
-        if (!result || result.ok === false) throw new Error((result && result.error) || "Status pengguna belum tersimpan.");
+        const result = await callServer(isAdd ? "addUser" : "setUserStatus", isAdd
+          ? { email: email, name: name, dept: dept, role: role, status: status }
+          : { email: button.dataset.email, status: status });
+        if (!result || result.ok === false) throw new Error((result && result.error) || "Data pengguna belum tersimpan.");
         bootstrap.Modal.getOrCreateInstance(document.getElementById("adminUserModal")).hide();
         await syncData();
-        showToast(result.message || "Status pengguna berhasil diperbarui.", "Perubahan tersimpan", "success");
+        showToast(result.message || "Data pengguna berhasil disimpan.", "Perubahan tersimpan", "success");
       } catch (error) {
-        showToast(error.message || "Status pengguna belum tersimpan.", "Gagal menyimpan", "danger");
+        showToast(error.message || "Data pengguna belum tersimpan.", "Gagal menyimpan", "danger");
       } finally {
         button.disabled = false;
       }
@@ -1170,6 +1235,10 @@
       setPage("pending");
     }
 
+    function notificationKey(notice) {
+      return String(notice && notice.text || "") + "|" + String(notice && notice.time || "");
+    }
+
     function applyBootstrapData(data) {
       if (!data || data.ok === false) throw new Error((data && data.error) || "Data aplikasi tidak dapat dibaca.");
 
@@ -1186,7 +1255,21 @@
 
       state.rooms = Array.isArray(data.rooms) ? data.rooms.map(mapLiveRoom) : [];
       state.bookings = Array.isArray(data.bookings) ? data.bookings.map(mapLiveBooking) : [];
-      state.notifications = Array.isArray(data.notifications) ? data.notifications : [];
+
+      const previousNotifications = new Map(state.notifications.map((notice) => [notificationKey(notice), notice]));
+      const incomingNotifications = Array.isArray(data.notifications) ? data.notifications : [];
+      const freshNotifications = state.notificationsInitialized
+        ? incomingNotifications.filter((notice) => !previousNotifications.has(notificationKey(notice)))
+        : [];
+      state.notifications = incomingNotifications.map((notice) => {
+        const previous = previousNotifications.get(notificationKey(notice));
+        return Object.assign({}, notice, { read: previous ? Boolean(previous.read) : Boolean(notice.read) });
+      });
+      state.notificationsInitialized = true;
+      freshNotifications.slice(0, 3).forEach((notice) => {
+        showToast(notice.text, "Notifikasi baru", "info");
+      });
+
       state.approvers = Array.isArray(data.approvers) ? data.approvers : [];
       if (Array.isArray(data.users)) {
         state.users = data.users.map(function(user) {
@@ -1303,7 +1386,8 @@
     document.getElementById("adminAddBtn").addEventListener("click", () => {
       const activeTab = document.querySelector("[data-admin-tab].active");
       if (activeTab && activeTab.dataset.adminTab === "rooms") openAdminRoomEditor("");
-      else showToast("Pengguna baru mendaftar melalui tombol Masuk dengan Google.", "Panel Admin", "info");
+      else if (activeTab && activeTab.dataset.adminTab === "users") openAdminUserEditor("");
+      else showToast("Pilih tab Pengguna atau Ruangan terlebih dahulu.", "Panel Admin", "info");
     });
     document.getElementById("registrationForm").addEventListener("submit", (event) => {
       event.preventDefault();
