@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#5b5ce2">
   <title>Peminjaman Ruangan</title>
 
@@ -510,6 +510,70 @@
       #roomGrid .room-meta span { font-size: 10px; }
       #roomGrid .room-meta .btn { width: 100%; min-height: 40px; font-size: 12px; }
       .mobile-bottom-nav { display: none !important; }
+    }
+
+    /* Fluid sizing for desktop, Android, and iOS */
+    html { -webkit-text-size-adjust: 100%; }
+    body { overflow-x: hidden; }
+    .app-shell { min-height: 100vh; min-height: 100dvh; }
+    .main-area, .content { min-width: 0; }
+
+    @media (max-width: 1050px) {
+      html, body { width: 100%; min-width: 0; overflow-x: hidden; }
+      .app-shell { min-height: 100vh; min-height: 100dvh; }
+      .main-area { width: 100%; margin-left: 0; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+      .topbar {
+        width: 100%;
+        min-height: calc(64px + env(safe-area-inset-top));
+        height: auto;
+        padding: env(safe-area-inset-top) clamp(12px, 3vw, 24px) 0;
+      }
+      .content {
+        width: 100%;
+        max-width: none;
+        padding: clamp(16px, 4vw, 28px) clamp(12px, 3vw, 24px) 36px;
+      }
+      .page { width: 100%; min-width: 0; }
+      .mobile-menu-btn { width: clamp(40px, 11vw, 46px); height: clamp(40px, 11vw, 46px); }
+      .sidebar {
+        width: min(300px, 86vw);
+        height: 100vh;
+        height: 100dvh;
+        max-height: 100dvh;
+        padding-top: calc(20px + env(safe-area-inset-top));
+        padding-bottom: calc(18px + env(safe-area-inset-bottom));
+      }
+      .mobile-menu-overlay { height: 100vh; height: 100dvh; }
+      .hero, .card-soft { max-width: 100%; }
+      .hero h2 { font-size: clamp(24px, 6vw, 32px); }
+      .hero p { font-size: clamp(13px, 3.6vw, 16px); }
+      .section-title { font-size: clamp(20px, 5vw, 24px); }
+      .form-control, .form-select, textarea.form-control {
+        font-size: 16px !important;
+        min-height: 48px;
+      }
+      #roomGrid {
+        width: 100%;
+        grid-template-columns: repeat(auto-fit, minmax(clamp(145px, 42vw, 240px), 1fr));
+        gap: clamp(8px, 2.5vw, 16px);
+      }
+      #roomGrid > [class*="col-"] { width: 100%; min-width: 0; padding-inline: 0; }
+      #roomGrid .room-card { width: 100%; min-width: 0; }
+      #roomGrid .room-cover { height: clamp(92px, 16vw, 132px); }
+      #roomGrid .room-body { padding: clamp(11px, 3vw, 16px); }
+      #roomGrid .room-body h3 { font-size: clamp(13px, 3.5vw, 17px); }
+      #roomGrid .room-body p { font-size: clamp(10px, 2.8vw, 13px); }
+    }
+
+    @media (max-width: 390px) {
+      .content { padding-inline: 10px; }
+      .hero { padding-inline: 16px; }
+      #roomGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      #roomGrid .room-body { padding: 10px; }
+      #roomGrid .room-body h3 { font-size: 12px; }
+      #roomGrid .room-body p { font-size: 10px; }
+      #roomGrid .room-meta span { font-size: 9px; }
+      #roomGrid .room-meta .btn { font-size: 11px; min-height: 38px; }
     }
 </style>
 </head>
