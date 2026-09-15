@@ -874,6 +874,110 @@
       .hero .btn-white { background: #f4474e; color: #fff; }
     }
 
+    .stat-card[data-page] {
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .stat-card[data-page]:hover {
+      transform: translateY(-3px);
+      border-color: #b9cfee;
+      box-shadow: 0 14px 30px rgba(15, 77, 142, .13);
+    }
+    .stat-card[data-page]:focus-visible {
+      outline: 3px solid rgba(8, 103, 189, .28);
+      outline-offset: 3px;
+    }
+    .status-borrowed {
+      color: #a94c28 !important;
+      background: #fff0e8 !important;
+    }
+    .room-status-busy {
+      color: #a94c28 !important;
+      background: #fff0e8 !important;
+    }
+    .room-card-busy { border-color: #f0d2c4; }
+
+    @media (max-width: 1050px) {
+      .app-shell { font-size: 16px; }
+      .topbar {
+        min-height: calc(78px + env(safe-area-inset-top));
+        padding: env(safe-area-inset-top) 16px 0;
+      }
+      .page-heading h1 { font-size: clamp(22px, 6vw, 30px); }
+      .content {
+        padding: 22px 14px calc(112px + env(safe-area-inset-bottom));
+      }
+      .hero {
+        padding: clamp(28px, 7vw, 38px) 22px 28px;
+        border-radius: 24px;
+      }
+      .hero h2 {
+        font-size: clamp(29px, 8vw, 39px);
+        line-height: 1.16;
+      }
+      .hero p {
+        font-size: clamp(15px, 4.2vw, 18px);
+        line-height: 1.55;
+      }
+      .hero .btn {
+        min-height: 56px;
+        font-size: 16px;
+      }
+      #dashboardStats {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 14px !important;
+      }
+      .stat-card {
+        min-height: 148px;
+        padding: 22px;
+        border-radius: 22px;
+      }
+      .stat-card .stat-icon {
+        width: 52px;
+        height: 52px;
+        font-size: 25px;
+      }
+      .stat-card h3 { font-size: clamp(34px, 9vw, 42px); }
+      .stat-card p { font-size: clamp(14px, 3.8vw, 17px); }
+      .stat-card .trend { font-size: 13px; }
+      .mobile-social-card { padding: 24px 20px; border-radius: 24px; }
+      .social-card-head strong { font-size: 19px; }
+      .social-card-head small { font-size: 14px; }
+      .agenda-copy strong { font-size: 16px; }
+      .agenda-copy span { font-size: 13px; }
+      .section-title { font-size: clamp(23px, 6vw, 30px); }
+      .section-subtitle { font-size: 15px; }
+      .form-label { font-size: 15px; }
+      .form-control, .form-select, textarea.form-control {
+        min-height: 54px;
+        font-size: 16px !important;
+      }
+      .btn { font-size: 16px; min-height: 50px; }
+      .mobile-bottom-nav {
+        height: calc(90px + env(safe-area-inset-bottom));
+        padding: 10px 8px env(safe-area-inset-bottom);
+      }
+      .mobile-bottom-nav button {
+        font-size: 12px;
+        gap: 5px;
+      }
+      .mobile-bottom-nav button i { font-size: 27px; }
+      #roomGrid { gap: 14px !important; }
+      #roomGrid .room-cover { height: 138px; }
+      #roomGrid .room-body { padding: 17px; }
+      #roomGrid .room-body h3 { font-size: 16px; }
+      #roomGrid .room-body p { font-size: 13px; }
+      #roomGrid .room-meta span { font-size: 12px; }
+      #roomGrid .room-meta .btn { min-height: 48px; font-size: 14px; }
+    }
+    @media (max-width: 390px) {
+      .content { padding-inline: 12px; }
+      .stat-card { padding: 17px; }
+      .stat-card p { font-size: 13px; }
+      .hero h2 { font-size: 28px; }
+      .hero p { font-size: 14px; }
+      .mobile-bottom-nav button { font-size: 11px; }
+    }
 </style>
 </head>
 
@@ -1045,10 +1149,10 @@
             <button class="btn btn-white mt-2" type="button" data-page="booking"><i class="bi bi-plus-lg me-1"></i>Ajukan peminjaman</button>
           </div>
           <div id="dashboardStats" class="row g-3 mb-4">
-            <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-door-open"></i></span><span class="trend"><i class="bi bi-arrow-up-short"></i>Aktif</span><h3 id="statRooms">5</h3><p>Ruangan tersedia</p></div></div>
-            <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-calendar2-check"></i></span><span class="trend"><i class="bi bi-check2"></i>Aktif</span><h3 id="statBookings">0</h3><p>Peminjaman saya</p></div></div>
-            <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-hourglass-split"></i></span><span class="trend text-warning"><i class="bi bi-clock"></i>Proses</span><h3 id="statPending">0</h3><p>Menunggu persetujuan</p></div></div>
-            <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-check-circle"></i></span><span class="trend"><i class="bi bi-graph-up-arrow"></i>Baik</span><h3 id="statApproved">0</h3><p>Sudah disetujui</p></div></div>
+            <div class="col-6 col-xl-3"><div class="card-soft stat-card" data-page="rooms" role="button" tabindex="0" title="Buka Katalog Ruangan"><span class="stat-icon"><i class="bi bi-door-open"></i></span><span class="trend"><i class="bi bi-arrow-up-short"></i>Aktif</span><h3 id="statRooms">5</h3><p>Ruangan tersedia</p></div></div>
+            <div class="col-6 col-xl-3"><div class="card-soft stat-card" data-page="my-bookings" role="button" tabindex="0" title="Buka Peminjaman Saya"><span class="stat-icon"><i class="bi bi-calendar2-check"></i></span><span class="trend"><i class="bi bi-check2"></i>Aktif</span><h3 id="statBookings">0</h3><p>Peminjaman saya</p></div></div>
+            <div class="col-6 col-xl-3"><div class="card-soft stat-card" data-page="my-bookings" role="button" tabindex="0" title="Buka status peminjaman"><span class="stat-icon"><i class="bi bi-hourglass-split"></i></span><span class="trend text-warning"><i class="bi bi-clock"></i>Proses</span><h3 id="statPending">0</h3><p>Menunggu persetujuan</p></div></div>
+            <div class="col-6 col-xl-3"><div class="card-soft stat-card" data-page="my-bookings" role="button" tabindex="0" title="Buka Peminjaman Saya"><span class="stat-icon"><i class="bi bi-check-circle"></i></span><span class="trend"><i class="bi bi-graph-up-arrow"></i>Baik</span><h3 id="statApproved">0</h3><p>Sudah disetujui</p></div></div>
           </div>
           <div class="row g-3 dashboard-secondary-row">
             <div class="col-xl-8">
@@ -1086,7 +1190,7 @@
           </div>
           <div class="card-soft filter-bar">
             <div class="search-box"><i class="bi bi-search"></i><input id="roomSearch" class="form-control" type="search" placeholder="Cari nama ruangan..."></div>
-            <select id="roomStatusFilter" class="form-select" style="max-width: 165px"><option value="all">Semua status</option><option value="Aktif">Tersedia</option><option value="Nonaktif">Nonaktif</option></select>
+            <select id="roomStatusFilter" class="form-select" style="max-width: 165px"><option value="all">Semua status</option><option value="Aktif">Tersedia</option><option value="Dipinjam">Sedang dipinjam</option><option value="Nonaktif">Nonaktif</option></select>
           </div>
           <div id="roomGrid" class="row g-3"></div>
         </section>
@@ -1189,7 +1293,7 @@
   <script>
     const CONFIG = {
       API_URL: "",
-      POLL_MS: 20000,
+      POLL_MS: 15000,
       APP_NAME: "Peminjaman Ruangan",
       HERO_GREETING_NAME: "Astra Motor Jakarta"
     };
@@ -1331,8 +1435,8 @@
       document.getElementById("bookingEmail").value = state.user.email;
     }
 
-    function isRoomAvailable(status) {
-      return ["aktif", "tersedia", "available"].includes(String(status || "").trim().toLowerCase());
+    function isRoomAvailable(status, isBorrowed) {
+      return ["aktif", "tersedia", "available"].includes(String(status || "").trim().toLowerCase()) && !isBorrowed;
     }
 
     function statusClass(status) {
@@ -1381,10 +1485,15 @@
 
     function renderDashboard() {
       const mine = state.bookings.filter((booking) => sameEmail(booking.email, state.user.email));
-      document.getElementById("statRooms").textContent = state.rooms.filter((room) => isRoomAvailable(room.status)).length;
+      document.getElementById("statRooms").textContent = state.rooms.filter((room) => isRoomAvailable(room.status, room.isBorrowed)).length;
       document.getElementById("statBookings").textContent = mine.length;
-      document.getElementById("statPending").textContent = mine.filter((booking) => booking.status === "Menunggu").length;
+      const pendingCount = ["Admin", "Penyetuju"].includes(state.role)
+        ? pendingApprovalsForCurrentUser().length
+        : mine.filter((booking) => booking.status === "Menunggu").length;
+      document.getElementById("statPending").textContent = pendingCount;
       document.getElementById("statApproved").textContent = mine.filter((booking) => booking.status === "Disetujui").length;
+      const pendingCard = document.getElementById("statPending").closest(".stat-card");
+      if (pendingCard) pendingCard.dataset.page = ["Admin", "Penyetuju"].includes(state.role) ? "approvals" : "my-bookings";
       const activityMarkup = state.activities.length
         ? state.activities.map((activity) => '<div class="activity"><div class="activity-icon ' + activity.type + '"><i class="bi ' + activity.icon + '"></i></div><div><p>' + escapeHTML(activity.text) + '</p><time>' + escapeHTML(activity.time) + "</time></div></div>").join("")
         : '<div class="empty-state py-4"><i class="bi bi-clock-history"></i><p>Belum ada aktivitas.</p></div>';
@@ -1421,10 +1530,28 @@
       const query = (document.getElementById("roomSearch").value || "").toLowerCase();
       const selectedStatus = document.getElementById("roomStatusFilter").value;
       const filtered = state.rooms.filter((room) => {
-        const statusMatches = selectedStatus === "all" || (selectedStatus === "Aktif" ? isRoomAvailable(room.status) : room.status === selectedStatus);
+        const available = isRoomAvailable(room.status, room.isBorrowed);
+        const statusMatches = selectedStatus === "all"
+          || (selectedStatus === "Aktif" && available)
+          || (selectedStatus === "Dipinjam" && room.isBorrowed)
+          || (selectedStatus === "Nonaktif" && room.status === "Nonaktif");
         return statusMatches && (room.name.toLowerCase().includes(query) || room.id.toLowerCase().includes(query));
       });
-      document.getElementById("roomGrid").innerHTML = filtered.length ? filtered.map((room) => '<div class="col-md-6 col-xl-4"><div class="card-soft room-card"><div class="room-cover ' + room.type + '"><span class="room-status">' + (isRoomAvailable(room.status) ? "Tersedia" : "Nonaktif") + '</span><div class="room-illustration"><i class="bi bi-door-open"></i></div></div><div class="room-body"><h3>' + escapeHTML(room.name) + '</h3><p>' + escapeHTML(room.desc) + '</p><div class="room-meta"><span><i class="bi bi-people"></i> Maks. ' + room.capacity + " orang</span>" + (isRoomAvailable(room.status) ? '<button class="btn btn-brand py-2 px-3" type="button" data-book-room="' + room.id + '">Pilih</button>' : '<span class="status-pill status-inactive">Tidak aktif</span>') + "</div></div></div></div>").join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-search"></i><p>Ruangan yang dicari belum ditemukan.</p></div></div>';
+
+      document.getElementById("roomGrid").innerHTML = filtered.length
+        ? filtered.map((room) => {
+            const available = isRoomAvailable(room.status, room.isBorrowed);
+            const statusText = room.isBorrowed ? "Sedang dipinjam" : (available ? "Tersedia" : "Nonaktif");
+            const statusPillClass = room.isBorrowed ? "status-borrowed" : (available ? "status-active" : "status-inactive");
+            const roomStatusClass = room.isBorrowed ? "room-status-busy" : "";
+            const action = available
+              ? '<button class="btn btn-brand py-2 px-3" type="button" data-book-room="' + escapeHTML(room.id) + '">Pilih</button>'
+              : '<span class="status-pill ' + statusPillClass + '">' + statusText + '</span>';
+
+            return '<div class="col-md-6 col-xl-4"><div class="card-soft room-card ' + (room.isBorrowed ? "room-card-busy" : "") + '"><div class="room-cover ' + room.type + '"><span class="room-status ' + roomStatusClass + '">' + statusText + '</span><div class="room-illustration"><i class="bi bi-door-open"></i></div></div><div class="room-body"><h3>' + escapeHTML(room.name) + '</h3><p>' + escapeHTML(room.desc) + '</p><div class="room-meta"><span><i class="bi bi-people"></i> Maks. ' + room.capacity + " orang</span>" + action + "</div></div></div></div>";
+          }).join("")
+        : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-search"></i><p>Ruangan yang dicari belum ditemukan.</p></div></div>';
+
       document.querySelectorAll("[data-book-room]").forEach((button) => button.addEventListener("click", () => {
         document.getElementById("bookingRoomId").dataset.roomId = button.dataset.bookRoom;
         setPage("booking");
@@ -1435,7 +1562,8 @@
       updateUserUI();
 
       const selectedId = document.getElementById("bookingRoomId").dataset.roomId;
-      const room = state.rooms.find((item) => item.id === selectedId) || state.rooms.find((item) => isRoomAvailable(item.status));
+      const selectedRoom = state.rooms.find((item) => item.id === selectedId && isRoomAvailable(item.status, item.isBorrowed));
+      const room = selectedRoom || state.rooms.find((item) => isRoomAvailable(item.status, item.isBorrowed));
       if (room) {
         document.getElementById("bookingRoomId").dataset.roomId = room.id;
         document.getElementById("bookingRoomName").textContent = room.name;
@@ -1555,7 +1683,7 @@
         ? users.map((user) => '<tr><td><strong>' + escapeHTML(user.name) + '</strong></td><td>' + escapeHTML(user.email) + '</td><td>' + escapeHTML(user.dept) + '</td><td>' + escapeHTML(user.role) + '</td><td><span class="status-pill ' + statusClass(user.status) + '">' + escapeHTML(user.status) + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-action="' + user.email + '"><i class="bi bi-three-dots"></i></button></td></tr>').join("")
         : '<tr><td colspan="6"><div class="empty-state py-3"><p>Belum ada data pengguna.</p></div></td></tr>';
       document.getElementById("adminRoomsTable").innerHTML = state.rooms.length
-        ? state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + statusClass(room.status) + '">' + (isRoomAvailable(room.status) ? "Aktif" : "Nonaktif") + '</span></td><td><div class="booking-row-actions"><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '" title="Ubah ruangan"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger py-1 px-2" type="button" data-admin-delete-room="' + room.id + '" title="Hapus ruangan"><i class="bi bi-trash"></i></button></div></td></tr>').join("")
+        ? state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + (room.isBorrowed ? "status-borrowed" : statusClass(room.status)) + '">' + (room.isBorrowed ? "Sedang dipinjam" : (isRoomAvailable(room.status) ? "Aktif" : "Nonaktif")) + '</span></td><td><div class="booking-row-actions"><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '" title="Ubah ruangan"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger py-1 px-2" type="button" data-admin-delete-room="' + room.id + '" title="Hapus ruangan"><i class="bi bi-trash"></i></button></div></td></tr>').join("")
         : '<tr><td colspan="5"><div class="empty-state py-3"><p>Belum ada data ruangan.</p></div></td></tr>';
       document.getElementById("allBookingsTable").innerHTML = state.bookings.map((booking) => bookingRow(booking, true)).join("");
       bindBookingViewButtons();
@@ -1779,6 +1907,9 @@
         id: room.ID,
         name: room.NamaRuangan,
         status: room.Status,
+        effectiveStatus: room.StatusSaatIni || room.Status,
+        isBorrowed: Boolean(room.SedangDipinjam || room.StatusSaatIni === "Dipinjam"),
+        activeBooking: room.PeminjamanAktif ? mapLiveBooking(room.PeminjamanAktif) : null,
         desc: room.Deskripsi || "Ruangan siap digunakan untuk kegiatan internal.",
         type: oldRoom ? oldRoom.type : types[index % types.length],
         capacity: oldRoom ? oldRoom.capacity : 30
@@ -1860,6 +1991,7 @@
       });
 
       state.approvers = Array.isArray(data.approvers) ? data.approvers : [];
+      state.activities = Array.isArray(data.activities) ? data.activities : [];
       if (Array.isArray(data.users)) {
         state.users = data.users.map(function(user) {
           return {
@@ -2125,6 +2257,10 @@
 
     applyDeviceLayout();
     setInterval(syncData, CONFIG.POLL_MS);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) syncData();
+    });
+    window.addEventListener("focus", () => syncData());
     setInterval(updateReturnCountdowns, 1000);
   </script>
 </body>
