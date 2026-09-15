@@ -1099,6 +1099,140 @@
       html.phone-device #roomGrid .room-meta span { font-size: 11px; }
       html.phone-device #roomGrid .room-meta .btn { min-height: 48px; font-size: 13px; }
     }
+  
+    /* Final mobile readability v2 */
+    @media (max-width: 1050px) {
+      html.phone-device,
+      html.phone-device body {
+        font-size: 18px;
+        overflow-x: hidden;
+      }
+      html.phone-device .topbar {
+        min-height: calc(88px + env(safe-area-inset-top));
+        padding: env(safe-area-inset-top) 20px 0;
+        gap: 14px;
+      }
+      html.phone-device .page-heading h1 { font-size: 26px; }
+      html.phone-device .mobile-menu-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        font-size: 36px;
+      }
+      html.phone-device .content {
+        padding: 30px 18px calc(132px + env(safe-area-inset-bottom));
+      }
+      html.phone-device .hero {
+        min-height: 242px;
+        padding: 38px 26px 32px;
+        border-radius: 27px;
+      }
+      html.phone-device .hero h2 {
+        font-size: clamp(34px, 9vw, 42px);
+        line-height: 1.14;
+      }
+      html.phone-device .hero p {
+        font-size: clamp(17px, 4.5vw, 19px);
+        line-height: 1.55;
+      }
+      html.phone-device .hero .btn {
+        min-height: 62px;
+        padding-inline: 22px;
+        font-size: 18px;
+      }
+      html.phone-device #dashboardStats {
+        gap: 17px !important;
+        margin-bottom: 22px !important;
+      }
+      html.phone-device .stat-card {
+        min-height: 174px;
+        padding: 24px;
+        border-radius: 25px;
+      }
+      html.phone-device .stat-card .stat-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 29px;
+      }
+      html.phone-device .stat-card h3 { font-size: clamp(40px, 11vw, 48px); }
+      html.phone-device .stat-card p {
+        font-size: clamp(15px, 4.1vw, 18px);
+        line-height: 1.3;
+      }
+      html.phone-device .stat-card .trend { font-size: 15px; }
+      html.phone-device .section-title { font-size: 29px; }
+      html.phone-device .section-subtitle { font-size: 17px; }
+      html.phone-device .form-label { font-size: 17px; }
+      html.phone-device .form-control,
+      html.phone-device .form-select,
+      html.phone-device textarea.form-control {
+        min-height: 62px;
+        font-size: 18px !important;
+      }
+      html.phone-device .btn {
+        min-height: 58px;
+        font-size: 18px;
+      }
+      html.phone-device #roomGrid {
+        gap: 17px !important;
+      }
+      html.phone-device #roomGrid .room-cover { height: 162px; }
+      html.phone-device #roomGrid .room-body { padding: 20px; }
+      html.phone-device #roomGrid .room-body h3 {
+        font-size: clamp(16px, 4.5vw, 20px);
+        line-height: 1.3;
+      }
+      html.phone-device #roomGrid .room-body p {
+        font-size: clamp(13px, 3.6vw, 15px);
+        min-height: 48px;
+        line-height: 1.4;
+      }
+      html.phone-device #roomGrid .room-meta { gap: 9px; }
+      html.phone-device #roomGrid .room-meta span { font-size: 13px; }
+      html.phone-device #roomGrid .room-meta .btn {
+        min-height: 58px;
+        font-size: 15px;
+      }
+      html.phone-device .mobile-social-card {
+        padding: 30px 24px;
+        border-radius: 27px;
+      }
+      html.phone-device .social-card-head strong { font-size: 22px; }
+      html.phone-device .social-card-head small { font-size: 16px; }
+      html.phone-device .activity-list,
+      html.phone-device .agenda-list { font-size: 17px; }
+      html.phone-device .mobile-bottom-nav {
+        height: calc(102px + env(safe-area-inset-bottom));
+        padding: 12px 10px env(safe-area-inset-bottom);
+      }
+      html.phone-device .mobile-bottom-nav button {
+        padding: 7px 2px;
+        font-size: 14px;
+        gap: 7px;
+      }
+      html.phone-device .mobile-bottom-nav button i { font-size: 31px; }
+    }
+    @media (max-width: 390px) {
+      html.phone-device .content { padding-inline: 15px; }
+      html.phone-device .hero { padding-inline: 21px; }
+      html.phone-device .stat-card {
+        min-height: 162px;
+        padding: 19px;
+      }
+      html.phone-device .stat-card h3 { font-size: 42px; }
+      html.phone-device .stat-card p { font-size: 15px; }
+      html.phone-device #roomGrid { gap: 13px !important; }
+      html.phone-device #roomGrid .room-cover { height: 146px; }
+      html.phone-device #roomGrid .room-body { padding: 16px; }
+      html.phone-device #roomGrid .room-body h3 { font-size: 17px; }
+      html.phone-device #roomGrid .room-body p { font-size: 13px; }
+      html.phone-device #roomGrid .room-meta span { font-size: 12px; }
+      html.phone-device #roomGrid .room-meta .btn {
+        min-height: 52px;
+        font-size: 14px;
+      }
+      html.phone-device .mobile-bottom-nav button { font-size: 12px; }
+    }
   </style>
 </head>
 
