@@ -13,7 +13,7 @@ const APP_CONFIG = {
 
 const HEADERS = {
   Pengguna: ["Email", "Nama", "Role", "Status", "TanggalDaftar", "Dept"],
-  Ruangan: ["ID", "NamaRuangan", "Status", "Deskripsi"],
+  Ruangan: ["ID", "NamaRuangan", "Status", "Deskripsi", "StatusSaatIni"],
   Peminjaman: [
     "ID", "EmailPeminjam", "NamaPeminjam", "IDRuangan", "NamaRuangan",
     "Tanggal", "WaktuMulai", "WaktuSelesai", "Tujuan", "JumlahPeserta",
