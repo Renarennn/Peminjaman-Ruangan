@@ -793,6 +793,87 @@
       border-radius: 16px;
     }
 
+    /* Desktop reference layout: wide Astra-style header and workspace */
+    .app-shell { background: #eef7ff; }
+    .app-brand-banner {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 45;
+      height: 132px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      padding: 22px clamp(28px, 4vw, 64px);
+      color: #fff;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 84% -45%, rgba(43, 158, 255, .72), transparent 34%),
+        radial-gradient(circle at 55% 120%, rgba(0, 36, 105, .62), transparent 42%),
+        linear-gradient(118deg, #063d80 0%, #075ca9 52%, #0a72c8 100%);
+      box-shadow: 0 10px 28px rgba(2, 55, 112, .18);
+    }
+    .app-brand-banner::before,
+    .app-brand-banner::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .app-brand-banner::before { width: 340px; height: 340px; right: 13%; top: -245px; }
+    .app-brand-banner::after { width: 530px; height: 530px; left: 38%; bottom: -470px; }
+    .app-brand-copy, .app-brand-tagline { position: relative; z-index: 1; }
+    .app-brand-copy { display: flex; align-items: center; gap: 19px; min-width: 0; }
+    .app-brand-copy strong { display: block; font-size: clamp(25px, 2.7vw, 40px); line-height: 1.06; letter-spacing: -1.6px; }
+    .app-brand-copy span:not(.banner-logo) { display: block; color: rgba(255,255,255,.76); margin-top: 7px; font-size: 14px; }
+    .banner-logo {
+      width: 86px;
+      height: 86px;
+      flex: 0 0 auto;
+      border-radius: 23px;
+      background-color: #05070b;
+      background-image: var(--app-logo);
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      box-shadow: 0 12px 28px rgba(2, 22, 61, .28);
+    }
+    .app-brand-tagline {
+      padding: 13px 0 13px 24px;
+      border-left: 3px solid #ff4b50;
+      text-align: left;
+      min-width: 210px;
+    }
+    .app-brand-tagline strong { display: block; font-size: 17px; font-style: italic; }
+    .app-brand-tagline span { display: block; margin-top: 7px; color: rgba(255,255,255,.8); font-size: 12px; }
+    .app-shell { padding-top: 132px; }
+    .sidebar { inset: 132px auto 0 0; height: auto; }
+    .main-area { min-height: calc(100vh - 132px); }
+    .topbar { top: 132px; }
+    .hero {
+      background:
+        radial-gradient(circle at 88% 22%, rgba(61, 184, 255, .28), transparent 27%),
+        linear-gradient(135deg, #064a91 0%, #086cbd 70%, #087bd0 100%);
+      border-radius: 24px;
+    }
+    .hero .btn-white { color: #fff; background: #f4474e; }
+    .hero .btn-white:hover { color: #fff; background: #da3540; }
+    .stat-card { border-color: #d9eafa; }
+    @media (max-width: 1050px) {
+      .app-shell { padding-top: 0; }
+      .app-brand-banner { display: none; }
+      .sidebar { inset: 0 auto 0 0; height: 100vh; height: 100dvh; }
+      .main-area { min-height: 100vh; min-height: 100dvh; }
+      .topbar { top: 0; }
+      .hero {
+        background:
+          radial-gradient(circle at 88% 18%, rgba(73, 191, 255, .28), transparent 30%),
+          linear-gradient(135deg, #064a91 0%, #0872c8 100%);
+      }
+      .hero .btn-white { background: #f4474e; color: #fff; }
+    }
+
 </style>
 </head>
 
@@ -877,6 +958,19 @@
   </section>
 
   <div id="appShell" class="app-shell d-none-important">
+    <div class="app-brand-banner" aria-label="Identitas aplikasi">
+      <div class="app-brand-copy">
+        <span class="banner-logo" role="img" aria-label="Logo Peminjaman Ruangan"></span>
+        <div>
+          <strong>Peminjaman Ruangan</strong>
+          <span>Sistem peminjaman ruangan internal Astra Motor Jakarta</span>
+        </div>
+      </div>
+      <div class="app-brand-tagline">
+        <strong>Ruang untuk kolaborasi</strong>
+        <span>Satu tim · Satu ruang · Satu tujuan</span>
+      </div>
+    </div>
     <aside class="sidebar">
       <a class="brand" href="#" data-page="dashboard">
         <span class="brand-mark brand-logo" role="img" aria-label="Logo Peminjaman Ruangan"></span>
