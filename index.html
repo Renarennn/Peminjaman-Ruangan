@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#5b5ce2">
   <title>Peminjaman Ruangan</title>
 
@@ -1232,6 +1232,51 @@
         font-size: 14px;
       }
       html.phone-device .mobile-bottom-nav button { font-size: 12px; }
+    }
+  
+    /* Mobile viewport lock and desktop help card fix */
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior-x: none;
+    }
+    @media (min-width: 1051px) {
+      .sidebar {
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .sidebar-bottom {
+        flex-shrink: 0;
+      }
+      .mini-help {
+        padding: 13px 12px 11px;
+        margin: 10px 3px 12px;
+      }
+      .mini-help strong { font-size: 16px !important; }
+      .mini-help small {
+        font-size: 11px;
+        line-height: 1.35;
+        margin-top: 3px;
+      }
+      .mini-help .btn {
+        min-height: 40px;
+        padding: 7px 4px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+    }
+    @media (max-width: 1050px) {
+      html.phone-device body {
+        touch-action: pan-y;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      html.phone-device .sidebar {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      html.phone-device .content {
+        padding-bottom: calc(138px + env(safe-area-inset-bottom));
+      }
     }
   </style>
 </head>
