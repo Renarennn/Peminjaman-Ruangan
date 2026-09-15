@@ -18,7 +18,7 @@ const HEADERS = {
     "ID", "EmailPeminjam", "NamaPeminjam", "IDRuangan", "NamaRuangan",
     "Tanggal", "WaktuMulai", "WaktuSelesai", "Tujuan", "JumlahPeserta",
     "PenyetujuEmail", "PenyetujuNama", "Status", "CatatanPenyetuju",
-    "TanggalPengajuan"
+    "TanggalPengajuan", "StatusPersetujuan"
   ]
 };
 
@@ -132,7 +132,7 @@ function getBootstrap() {
   const visibleBookings = bookings.filter(function(booking) {
     return user.Role === "Admin" ||
       booking.EmailPeminjam === email ||
-      booking.PenyetujuEmail === email ||
+      approverEmails_(booking).indexOf(email) !== -1 ||
       booking.Status === "Disetujui";
   });
 
@@ -202,14 +202,12 @@ function createBooking(data) {
   const start = clean_(data && (data.start || data.timeStart));
   const end = clean_(data && (data.end || data.timeEnd));
   const purpose = clean_(data && data.purpose);
-  const participants = Number(data && data.participants);
-  const approverEmail = clean_(data && data.approverEmail);
-  const approverName = clean_(data && data.approverName);
+  const participants = Number(data && data.participants) || 0;
 
   if (normalize_(name) !== normalize_(user.Nama)) {
     throw new Error("Nama saat meminjam harus sama dengan nama saat mendaftar.");
   }
-  if (!roomId || !date || !start || !end || !purpose || !participants) {
+  if (!roomId || !date || !start || !end || !purpose) {
     throw new Error("Semua data peminjaman wajib diisi.");
   }
   if (minutes_(end) <= minutes_(start)) {
@@ -226,17 +224,23 @@ function createBooking(data) {
     throw new Error("Ruangan tidak tersedia.");
   }
 
-  let approver = null;
-  if (user.Role !== "Admin") {
-    approver = readUsers_().find(function(item) {
-      return item.Email === approverEmail &&
-        item.Role === "Penyetuju" &&
-        isRoomActive_(item.Status);
-    });
-    if (!approver) {
-      throw new Error("Penyetuju tidak valid atau belum aktif.");
-    }
+  const activeApprovers = readUsers_().filter(function(item) {
+    return item.Role === "Penyetuju" && isRoomActive_(item.Status);
+  });
+  if (user.Role !== "Admin" && !activeApprovers.length) {
+    throw new Error("Belum ada Penyetuju aktif. Pengajuan belum dapat dibuat.");
   }
+
+  const approverEmails = user.Role === "Admin"
+    ? []
+    : activeApprovers.map(function(item) { return item.Email; });
+  const approverNames = user.Role === "Admin"
+    ? []
+    : activeApprovers.map(function(item) { return item.Nama; });
+  const approvalState = {};
+  approverEmails.forEach(function(approverEmail) {
+    approvalState[approverEmail] = "Menunggu";
+  });
 
   const bookings = readBookings_();
   const conflict = bookings.some(function(item) {
@@ -262,18 +266,19 @@ function createBooking(data) {
     end,
     purpose,
     participants,
-    approver ? approver.Email : "",
-    approver ? approver.Nama : "",
+    approverEmails.join(", "),
+    approverNames.join(", "),
     status,
     "",
-    new Date()
+    new Date(),
+    JSON.stringify(approvalState)
   ]);
 
   return {
     ok: true,
     message: status === "Disetujui"
       ? "Peminjaman Admin langsung disetujui."
-      : "Pengajuan berhasil dikirim.",
+      : "Pengajuan dikirim ke semua Penyetuju aktif.",
     booking: {
       ID: id,
       EmailPeminjam: email,
@@ -285,11 +290,12 @@ function createBooking(data) {
       WaktuSelesai: end,
       Tujuan: purpose,
       JumlahPeserta: participants,
-      PenyetujuEmail: approver ? approver.Email : "",
-      PenyetujuNama: approver ? approver.Nama : "",
+      PenyetujuEmail: approverEmails.join(", "),
+      PenyetujuNama: approverNames.join(", "),
       Status: status,
       CatatanPenyetuju: "",
-      TanggalPengajuan: todayKey_()
+      TanggalPengajuan: todayKey_(),
+      StatusPersetujuan: JSON.stringify(approvalState)
     }
   };
 }
@@ -320,33 +326,69 @@ function setBookingStatus(data) {
   }
 
   if (!booking) throw new Error("Data peminjaman tidak ditemukan.");
-  if (user.Role !== "Admin" && booking.PenyetujuEmail !== email) {
-    throw new Error("Kamu tidak memiliki izin untuk memproses pengajuan ini.");
-  }
   if (booking.Status !== "Menunggu") {
     throw new Error("Pengajuan ini sudah diproses.");
   }
 
-  if (status === "Disetujui") {
-    const conflict = readBookings_().some(function(item) {
-      return item.ID !== booking.ID &&
-        item.IDRuangan === booking.IDRuangan &&
-        item.Tanggal === booking.Tanggal &&
-        item.Status === "Disetujui" &&
-        overlaps_(booking.WaktuMulai, booking.WaktuSelesai, item.WaktuMulai, item.WaktuSelesai);
-    });
-    if (conflict) throw new Error("Pengajuan tidak dapat disetujui karena jadwal sudah terisi.");
+  const approvers = approverEmails_(booking);
+  const approvalState = approvalState_(booking);
+
+  if (user.Role !== "Admin" && approvers.indexOf(email) === -1) {
+    throw new Error("Kamu tidak memiliki izin untuk memproses pengajuan ini.");
   }
 
-  sheet.getRange(rowNumber, 13).setValue(status);
+  if (user.Role === "Admin") {
+    if (status === "Disetujui") {
+      const conflict = readBookings_().some(function(item) {
+        return item.ID !== booking.ID &&
+          item.IDRuangan === booking.IDRuangan &&
+          item.Tanggal === booking.Tanggal &&
+          item.Status === "Disetujui" &&
+          overlaps_(booking.WaktuMulai, booking.WaktuSelesai, item.WaktuMulai, item.WaktuSelesai);
+      });
+      if (conflict) throw new Error("Pengajuan tidak dapat disetujui karena jadwal sudah terisi.");
+      approvers.forEach(function(approverEmail) {
+        approvalState[approverEmail] = "Disetujui";
+      });
+      booking.Status = "Disetujui";
+    } else {
+      booking.Status = "Ditolak";
+    }
+  } else {
+    approvalState[email] = status;
+    if (status === "Ditolak") {
+      booking.Status = "Ditolak";
+    } else if (allApproversApproved_(booking, approvalState)) {
+      const conflict = readBookings_().some(function(item) {
+        return item.ID !== booking.ID &&
+          item.IDRuangan === booking.IDRuangan &&
+          item.Tanggal === booking.Tanggal &&
+          item.Status === "Disetujui" &&
+          overlaps_(booking.WaktuMulai, booking.WaktuSelesai, item.WaktuMulai, item.WaktuSelesai);
+      });
+      if (conflict) throw new Error("Pengajuan tidak dapat disetujui karena jadwal sudah terisi.");
+      booking.Status = "Disetujui";
+    } else {
+      booking.Status = "Menunggu";
+    }
+  }
+
+  sheet.getRange(rowNumber, 13).setValue(booking.Status);
   sheet.getRange(rowNumber, 14).setValue(note);
+  sheet.getRange(rowNumber, 16).setValue(JSON.stringify(approvalState));
+
+  let message = "Status " + id + " diubah menjadi " + booking.Status + ".";
+  if (user.Role !== "Admin" && status === "Disetujui" && booking.Status === "Menunggu") {
+    message = "Persetujuan kamu tersimpan. Menunggu Penyetuju lain.";
+  } else if (user.Role !== "Admin" && status === "Disetujui" && booking.Status === "Disetujui") {
+    message = "Semua Penyetuju sudah menyetujui peminjaman.";
+  }
 
   return {
     ok: true,
-    message: "Status " + id + " diubah menjadi " + status + "."
+    message: message
   };
 }
-
 
 function returnBooking(data) {
   const email = getActiveEmail_();
@@ -529,17 +571,36 @@ function getSpreadsheet_() {
 function getSheet_(sheetName) {
   const sheet = getSpreadsheet_().getSheetByName(sheetName);
   if (!sheet) throw new Error("Tab " + sheetName + " tidak ditemukan.");
+  if (HEADERS[sheetName]) ensureHeaders_(sheet, HEADERS[sheetName]);
   return sheet;
 }
 
 function ensureSheet_(spreadsheet, sheetName, headers) {
   let sheet = spreadsheet.getSheetByName(sheetName);
   if (!sheet) sheet = spreadsheet.insertSheet(sheetName);
+  ensureHeaders_(sheet, headers);
+}
 
+function ensureHeaders_(sheet, headers) {
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.setFrozenRows(1);
+    return;
   }
+
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const existing = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(clean_);
+  let nextColumn = lastColumn;
+
+  headers.forEach(function(header) {
+    if (existing.indexOf(header) === -1) {
+      nextColumn += 1;
+      sheet.getRange(1, nextColumn).setValue(header);
+      existing.push(header);
+    }
+  });
+
+  sheet.setFrozenRows(1);
 }
 
 function readUsers_() {
@@ -604,6 +665,7 @@ function bookingFromRow_(row, rowNumber) {
     Status: clean_(row[12]),
     CatatanPenyetuju: clean_(row[13]),
     TanggalPengajuan: dateValue_(row[14]),
+    StatusPersetujuan: clean_(row[15]),
     _row: rowNumber
   };
 }
@@ -635,7 +697,8 @@ function publicBooking_(booking) {
     PenyetujuNama: booking.PenyetujuNama,
     Status: booking.Status,
     CatatanPenyetuju: booking.CatatanPenyetuju,
-    TanggalPengajuan: booking.TanggalPengajuan
+    TanggalPengajuan: booking.TanggalPengajuan,
+    StatusPersetujuan: booking.StatusPersetujuan
   };
 }
 
@@ -657,7 +720,7 @@ function buildNotifications_(user, bookings) {
 
   if (user.Role === "Penyetuju") {
     bookings.filter(function(item) {
-      return item.Status === "Menunggu" && item.PenyetujuEmail === user.Email;
+      return item.Status === "Menunggu" && approverEmails_(item).indexOf(user.Email) !== -1;
     }).slice(-8).forEach(function(item) {
       notifications.push({
         icon: "bi-clipboard-check",
@@ -682,6 +745,35 @@ function buildNotifications_(user, bookings) {
   }
 
   return notifications.reverse();
+}
+
+function approverEmails_(booking) {
+  return clean_(booking && booking.PenyetujuEmail)
+    .split(",")
+    .map(function(email) { return clean_(email); })
+    .filter(Boolean);
+}
+
+function approvalState_(booking) {
+  let state = {};
+  try {
+    const parsed = JSON.parse(clean_(booking && booking.StatusPersetujuan) || "{}");
+    if (parsed && typeof parsed === "object") state = parsed;
+  } catch (error) {
+    state = {};
+  }
+
+  approverEmails_(booking).forEach(function(email) {
+    if (!state[email]) state[email] = "Menunggu";
+  });
+  return state;
+}
+
+function allApproversApproved_(booking, state) {
+  const approvers = approverEmails_(booking);
+  return approvers.length > 0 && approvers.every(function(email) {
+    return state[email] === "Disetujui";
+  });
 }
 
 function findUserByEmail_(email) {
