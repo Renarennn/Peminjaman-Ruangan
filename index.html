@@ -1311,7 +1311,7 @@
           </div>
           <div class="card-soft filter-bar">
             <div class="search-box"><i class="bi bi-search"></i><input id="roomSearch" class="form-control" type="search" placeholder="Cari nama ruangan..."></div>
-            <select id="roomStatusFilter" class="form-select" style="max-width: 165px"><option value="all">Semua status</option><option value="Aktif">Tersedia</option><option value="Dipinjam">Sedang dipinjam</option><option value="Nonaktif">Nonaktif</option></select>
+            <select id="roomStatusFilter" class="form-select" style="max-width: 165px"><option value="all">Semua status</option><option value="Aktif">Tersedia</option><option value="Dipinjam">Tidak tersedia</option><option value="Nonaktif">Nonaktif</option></select>
           </div>
           <div id="roomGrid" class="row g-3"></div>
         </section>
@@ -1662,7 +1662,7 @@
       document.getElementById("roomGrid").innerHTML = filtered.length
         ? filtered.map((room) => {
             const available = isRoomAvailable(room.status, room.isBorrowed);
-            const statusText = room.isBorrowed ? "Sedang dipinjam" : (available ? "Tersedia" : "Nonaktif");
+            const statusText = room.isBorrowed ? "Tidak tersedia" : (available ? "Tersedia" : "Nonaktif");
             const statusPillClass = room.isBorrowed ? "status-borrowed" : (available ? "status-active" : "status-inactive");
             const roomStatusClass = room.isBorrowed ? "room-status-busy" : "";
             const action = available
@@ -1804,7 +1804,7 @@
         ? users.map((user) => '<tr><td><strong>' + escapeHTML(user.name) + '</strong></td><td>' + escapeHTML(user.email) + '</td><td>' + escapeHTML(user.dept) + '</td><td>' + escapeHTML(user.role) + '</td><td><span class="status-pill ' + statusClass(user.status) + '">' + escapeHTML(user.status) + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-action="' + user.email + '"><i class="bi bi-three-dots"></i></button></td></tr>').join("")
         : '<tr><td colspan="6"><div class="empty-state py-3"><p>Belum ada data pengguna.</p></div></td></tr>';
       document.getElementById("adminRoomsTable").innerHTML = state.rooms.length
-        ? state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + (room.isBorrowed ? "status-borrowed" : statusClass(room.status)) + '">' + (room.isBorrowed ? "Sedang dipinjam" : (isRoomAvailable(room.status) ? "Aktif" : "Nonaktif")) + '</span></td><td><div class="booking-row-actions"><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '" title="Ubah ruangan"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger py-1 px-2" type="button" data-admin-delete-room="' + room.id + '" title="Hapus ruangan"><i class="bi bi-trash"></i></button></div></td></tr>').join("")
+        ? state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + (room.isBorrowed ? "status-borrowed" : statusClass(room.status)) + '">' + (room.isBorrowed ? "Tidak tersedia" : (isRoomAvailable(room.status) ? "Aktif" : "Nonaktif")) + '</span></td><td><div class="booking-row-actions"><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '" title="Ubah ruangan"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger py-1 px-2" type="button" data-admin-delete-room="' + room.id + '" title="Hapus ruangan"><i class="bi bi-trash"></i></button></div></td></tr>').join("")
         : '<tr><td colspan="5"><div class="empty-state py-3"><p>Belum ada data ruangan.</p></div></td></tr>';
       document.getElementById("allBookingsTable").innerHTML = state.bookings.map((booking) => bookingRow(booking, true)).join("");
       bindBookingViewButtons();
