@@ -470,6 +470,47 @@
       .mobile-bottom-nav button { flex: 0 0 108px; min-width: 108px; font-size: 12px; }
       .mobile-bottom-nav button i { font-size: 24px; }
     }
+
+    .mobile-menu-btn, .mobile-menu-overlay { display: none; }
+    .mobile-menu-btn { border: 0; width: 42px; height: 42px; border-radius: 13px; background: #eeefff; color: var(--brand); place-items: center; font-size: 25px; flex: 0 0 auto; }
+    .mobile-menu-btn:active { transform: scale(.96); }
+    .mobile-menu-overlay { position: fixed; inset: 0; z-index: 55; background: rgba(18, 22, 55, .42); opacity: 0; pointer-events: none; transition: opacity .22s ease; }
+    .mobile-menu-overlay.show { opacity: 1; pointer-events: auto; }
+    @media (max-width: 1050px) {
+      .topbar { gap: 11px; }
+      .page-heading { min-width: 0; flex: 1 1 auto; }
+      .page-heading h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .mobile-menu-btn { display: grid; }
+      .mobile-menu-overlay { display: block; }
+      .sidebar {
+        display: flex;
+        width: min(292px, 86vw);
+        transform: translateX(-110%);
+        transition: transform .24s ease;
+        z-index: 60;
+        box-shadow: 18px 0 45px rgba(20, 24, 70, .18);
+        overflow-y: auto;
+      }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-area { margin-left: 0; }
+      .sync-text { display: none !important; }
+      .profile-menu .profile-text, .profile-menu > .bi-chevron-down { display: none; }
+      #roomGrid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-inline: 0;
+      }
+      #roomGrid > [class*="col-"] { width: 100%; padding-inline: 0; }
+      #roomGrid .room-cover { height: 100px; }
+      #roomGrid .room-body { padding: 14px; }
+      #roomGrid .room-body h3 { font-size: 14px; line-height: 1.35; }
+      #roomGrid .room-body p { font-size: 11px; line-height: 1.5; min-height: 33px; }
+      #roomGrid .room-meta { gap: 7px; flex-wrap: wrap; }
+      #roomGrid .room-meta span { font-size: 10px; }
+      #roomGrid .room-meta .btn { width: 100%; min-height: 40px; font-size: 12px; }
+      .mobile-bottom-nav { display: none !important; }
+    }
 </style>
 </head>
 
@@ -580,9 +621,13 @@
         </div>
       </div>
     </aside>
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay" aria-hidden="true"></div>
 
     <main class="main-area">
       <header class="topbar">
+        <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Buka menu navigasi" aria-expanded="false">
+          <i class="bi bi-list"></i>
+        </button>
         <div class="page-heading">
           <h1 id="pageTitle">Dashboard</h1>
           <p id="pageSubtitle">Ringkasan aktivitas peminjaman ruangan.</p>
@@ -1496,11 +1541,36 @@
       showToast("Kamu sudah keluar dari aplikasi.", "Sampai jumpa", "info");
     }
 
+    function closeMobileMenu() {
+      const sidebar = document.querySelector(".sidebar");
+      const overlay = document.getElementById("mobileMenuOverlay");
+      const button = document.getElementById("mobileMenuBtn");
+      if (sidebar) sidebar.classList.remove("mobile-open");
+      if (overlay) {
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+      }
+      if (button) button.setAttribute("aria-expanded", "false");
+    }
+
+    function openMobileMenu() {
+      const sidebar = document.querySelector(".sidebar");
+      const overlay = document.getElementById("mobileMenuOverlay");
+      const button = document.getElementById("mobileMenuBtn");
+      if (sidebar) sidebar.classList.add("mobile-open");
+      if (overlay) {
+        overlay.classList.add("show");
+        overlay.setAttribute("aria-hidden", "false");
+      }
+      if (button) button.setAttribute("aria-expanded", "true");
+    }
+
     document.addEventListener("click", (event) => {
       const pageButton = event.target.closest("[data-page]");
       if (pageButton) {
         event.preventDefault();
         setPage(pageButton.dataset.page);
+        closeMobileMenu();
       }
     });
 
@@ -1518,6 +1588,15 @@
     document.getElementById("logoutBtn").addEventListener("click", logout);
     document.getElementById("dropdownLogoutBtn").addEventListener("click", logout);
     document.getElementById("pendingLogoutBtn").addEventListener("click", logout);
+    document.getElementById("mobileMenuBtn").addEventListener("click", () => {
+      const isOpen = document.querySelector(".sidebar").classList.contains("mobile-open");
+      if (isOpen) closeMobileMenu();
+      else openMobileMenu();
+    });
+    document.getElementById("mobileMenuOverlay").addEventListener("click", closeMobileMenu);
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 1050) closeMobileMenu();
+    });
     document.getElementById("notificationBtn").addEventListener("click", (event) => {
       event.stopPropagation();
       document.getElementById("notificationPanel").classList.toggle("show");
