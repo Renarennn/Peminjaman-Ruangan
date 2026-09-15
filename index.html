@@ -1320,6 +1320,90 @@
       html.phone-device .custom-toast .toast-title { font-size: 18px; }
       html.phone-device .custom-toast .toast-body > i { font-size: 26px !important; }
     }
+  
+    /* Mobile readability v4 */
+    @media (max-width: 1050px) {
+      html.phone-device .topbar {
+        min-height: calc(94px + env(safe-area-inset-top)) !important;
+        padding: env(safe-area-inset-top) 20px 0 !important;
+      }
+      html.phone-device .page-heading h1 { font-size: 30px !important; }
+      html.phone-device .icon-btn,
+      html.phone-device #notificationBtn {
+        width: 70px !important;
+        height: 70px !important;
+        font-size: 36px !important;
+      }
+      html.phone-device #notificationBtn i,
+      html.phone-device .icon-btn i { font-size: 36px !important; }
+      html.phone-device .notification-badge {
+        min-width: 26px !important;
+        min-height: 26px !important;
+        font-size: 15px !important;
+      }
+      html.phone-device .profile-menu .avatar {
+        width: 58px !important;
+        height: 58px !important;
+        font-size: 21px !important;
+      }
+      html.phone-device .content {
+        padding: 34px 18px calc(145px + env(safe-area-inset-bottom)) !important;
+      }
+      html.phone-device .hero h2 { font-size: clamp(36px, 10vw, 46px) !important; }
+      html.phone-device .hero p { font-size: 19px !important; }
+      html.phone-device .hero .btn { font-size: 19px !important; min-height: 64px !important; }
+      html.phone-device .stat-card {
+        min-height: 182px !important;
+        padding: 25px !important;
+      }
+      html.phone-device .stat-card .stat-icon {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 31px !important;
+      }
+      html.phone-device .stat-card h3 { font-size: 48px !important; }
+      html.phone-device .stat-card p { font-size: 18px !important; }
+      html.phone-device .stat-card .trend { font-size: 16px !important; }
+      html.phone-device .section-title { font-size: 31px !important; }
+      html.phone-device .section-subtitle { font-size: 18px !important; }
+      html.phone-device .activity-list,
+      html.phone-device .agenda-list { font-size: 18px !important; }
+      html.phone-device .form-label { font-size: 18px !important; }
+      html.phone-device .form-control,
+      html.phone-device .form-select,
+      html.phone-device textarea.form-control {
+        font-size: 19px !important;
+        min-height: 64px !important;
+      }
+      html.phone-device #roomGrid .room-body h3 { font-size: 20px !important; }
+      html.phone-device #roomGrid .room-body p { font-size: 15px !important; }
+      html.phone-device #roomGrid .room-meta span { font-size: 14px !important; }
+      html.phone-device #roomGrid .room-meta .btn {
+        font-size: 16px !important;
+        min-height: 60px !important;
+      }
+      html.phone-device .mobile-bottom-nav {
+        height: calc(124px + env(safe-area-inset-bottom)) !important;
+        padding: 14px 8px env(safe-area-inset-bottom) !important;
+      }
+      html.phone-device .mobile-bottom-nav button {
+        font-size: 17px !important;
+        font-weight: 800 !important;
+        gap: 9px !important;
+      }
+      html.phone-device .mobile-bottom-nav button i {
+        font-size: 42px !important;
+      }
+    }
+    @media (max-width: 390px) {
+      html.phone-device .mobile-bottom-nav button { font-size: 14px !important; }
+      html.phone-device .mobile-bottom-nav button i { font-size: 36px !important; }
+      html.phone-device .icon-btn,
+      html.phone-device #notificationBtn {
+        width: 62px !important;
+        height: 62px !important;
+      }
+    }
   </style>
 </head>
 
