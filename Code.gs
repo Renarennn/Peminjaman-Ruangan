@@ -683,16 +683,20 @@ function ensureHeaders_(sheet, headers) {
     return;
   }
 
-  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const lastColumn = Math.max(sheet.getLastColumn(), headers.length, 1);
   const existing = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(clean_);
-  let nextColumn = lastColumn;
 
   headers.forEach(function(header) {
-    if (existing.indexOf(header) === -1) {
-      nextColumn += 1;
-      sheet.getRange(1, nextColumn).setValue(header);
-      existing.push(header);
+    if (existing.indexOf(header) !== -1) return;
+
+    let emptyIndex = existing.indexOf("");
+    if (emptyIndex === -1) {
+      emptyIndex = existing.length;
+      existing.push("");
     }
+
+    sheet.getRange(1, emptyIndex + 1).setValue(header);
+    existing[emptyIndex] = header;
   });
 
   sheet.setFrozenRows(1);
