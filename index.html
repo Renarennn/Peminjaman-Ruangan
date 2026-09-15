@@ -405,6 +405,71 @@
 
     .return-countdown { display: inline-flex; align-items: center; color: #c17d10; background: #fff7e8; border-radius: 10px; padding: 6px 9px; font-size: 10px; font-weight: 700; line-height: 1.35; }
     .return-countdown i { flex: 0 0 auto; }
+
+    .mobile-social-stack { display: none; }
+    .mobile-social-card { padding: 18px 16px; border-radius: 20px; }
+    .social-card-head { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; }
+    .social-card-head strong, .social-card-head small { display: block; }
+    .social-card-head strong { color: var(--ink); font-size: 14px; }
+    .social-card-head small { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .social-card-icon { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; color: var(--brand); background: #eeefff; font-size: 20px; flex: 0 0 auto; }
+    .agenda-list { display: grid; gap: 10px; }
+    .agenda-item { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-top: 1px solid #f0f0f6; }
+    .agenda-item:first-child { border-top: 0; padding-top: 0; }
+    .agenda-date { width: 42px; height: 48px; border-radius: 13px; display: grid; place-items: center; align-content: center; color: #fff; background: linear-gradient(135deg,#7778f1,#4e4fc5); flex: 0 0 auto; }
+    .agenda-date strong { font-size: 16px; line-height: 1; }
+    .agenda-date small { font-size: 10px; margin-top: 3px; text-transform: uppercase; }
+    .agenda-copy { min-width: 0; flex: 1 1 auto; }
+    .agenda-copy strong, .agenda-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .agenda-copy strong { color: var(--ink); font-size: 12px; }
+    .agenda-copy span { color: var(--muted); font-size: 10px; margin-top: 4px; }
+    .social-empty { text-align: center; color: var(--muted); padding: 18px 4px 3px; }
+    .social-empty i { color: #c7c8ed; font-size: 29px; }
+    .social-empty p { margin: 8px 0 13px; font-size: 12px; }
+    @media (max-width: 1050px) {
+      html, body { width: 100%; min-width: 0; overflow-x: hidden; }
+      .sidebar { display: none; }
+      .main-area { margin-left: 0; min-height: 100vh; padding-bottom: 90px; }
+      .topbar { height: 64px; padding: 0 15px; }
+      .page-heading h1 { font-size: 20px; }
+      .top-actions { gap: 10px; }
+      .avatar { width: 42px; height: 42px; border-radius: 14px; font-size: 14px; }
+      .content { width: 100%; max-width: none; padding: 18px 14px 38px; }
+      .hero { min-height: 0; padding: 26px 20px 22px; border-radius: 22px; }
+      .hero h2 { font-size: 28px; line-height: 1.2; margin-bottom: 10px; }
+      .hero p { font-size: 14px; line-height: 1.6; margin-bottom: 14px; }
+      .hero .btn { width: 100%; min-height: 48px; font-size: 14px; }
+      #dashboardStats { display: grid; grid-template-columns: 1fr; gap: 12px !important; margin-bottom: 16px !important; }
+      #dashboardStats > [class*="col-"] { width: 100%; padding: 0; }
+      .stat-card { min-height: 112px; padding: 20px; border-radius: 20px; }
+      .stat-card .stat-icon { width: 46px; height: 46px; font-size: 21px; }
+      .stat-card h3 { font-size: 32px; margin-top: 16px; }
+      .stat-card p { font-size: 14px; }
+      .stat-card .trend { right: 20px; top: 22px; font-size: 12px; }
+      .dashboard-secondary-row { display: none; }
+      .mobile-social-stack { display: grid; gap: 12px; }
+      .mobile-social-card { padding: 20px 17px; border-radius: 22px; }
+      .social-card-head strong { font-size: 16px; }
+      .social-card-head small { font-size: 12px; }
+      .social-card-icon { width: 48px; height: 48px; font-size: 22px; }
+      .agenda-item { padding: 14px 0; gap: 12px; }
+      .agenda-date { width: 50px; height: 56px; }
+      .agenda-date strong { font-size: 19px; }
+      .agenda-copy strong { font-size: 14px; }
+      .agenda-copy span { font-size: 12px; }
+      .agenda-item .status-pill { font-size: 10px; padding: 7px 9px; }
+      .social-empty p { font-size: 14px; }
+      .section-title { font-size: 22px; }
+      .section-subtitle { font-size: 14px; line-height: 1.55; }
+      .form-label { font-size: 14px; }
+      .form-control, .form-select, textarea.form-control { font-size: 15px; min-height: 48px; }
+      .btn { font-size: 14px; }
+      #roomGrid > [class*="col-"] { width: 100%; }
+      .table-card .table { min-width: 680px; }
+      .mobile-bottom-nav { height: 84px; justify-content: flex-start; gap: 6px; overflow-x: auto; padding: 9px 8px; }
+      .mobile-bottom-nav button { flex: 0 0 108px; min-width: 108px; font-size: 12px; }
+      .mobile-bottom-nav button i { font-size: 24px; }
+    }
 </style>
 </head>
 
@@ -557,13 +622,13 @@
             <p>Atur jadwal rapat dan gunakan ruangan yang sesuai kebutuhan tim kamu.</p>
             <button class="btn btn-white mt-2" type="button" data-page="booking"><i class="bi bi-plus-lg me-1"></i>Ajukan peminjaman</button>
           </div>
-          <div class="row g-3 mb-4">
+          <div id="dashboardStats" class="row g-3 mb-4">
             <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-door-open"></i></span><span class="trend"><i class="bi bi-arrow-up-short"></i>Aktif</span><h3 id="statRooms">5</h3><p>Ruangan tersedia</p></div></div>
             <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-calendar2-check"></i></span><span class="trend"><i class="bi bi-check2"></i>Aktif</span><h3 id="statBookings">0</h3><p>Peminjaman saya</p></div></div>
             <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-hourglass-split"></i></span><span class="trend text-warning"><i class="bi bi-clock"></i>Proses</span><h3 id="statPending">0</h3><p>Menunggu persetujuan</p></div></div>
             <div class="col-6 col-xl-3"><div class="card-soft stat-card"><span class="stat-icon"><i class="bi bi-check-circle"></i></span><span class="trend"><i class="bi bi-graph-up-arrow"></i>Baik</span><h3 id="statApproved">0</h3><p>Sudah disetujui</p></div></div>
           </div>
-          <div class="row g-3">
+          <div class="row g-3 dashboard-secondary-row">
             <div class="col-xl-8">
               <div class="card-soft calendar-card">
                 <div class="calendar-head">
@@ -581,6 +646,13 @@
                 <div class="d-flex justify-content-between align-items-start"><div><h3 class="section-title">Aktivitas terbaru</h3><p class="section-subtitle">Pembaruan terakhir dari sistem.</p></div><i class="bi bi-three-dots text-secondary"></i></div>
                 <div id="activityList" class="activity-list"></div>
               </div>
+            </div>
+          </div>
+          <div class="mobile-social-stack">
+            <div id="mobileAgenda" class="mobile-social-card card-soft"></div>
+            <div class="mobile-social-card card-soft">
+              <div class="social-card-head"><div class="social-card-icon"><i class="bi bi-activity"></i></div><div><strong>Aktivitas terbaru</strong><small>Pembaruan terbaru dari sistem.</small></div></div>
+              <div id="mobileActivityList" class="activity-list"></div>
             </div>
           </div>
         </section>
@@ -859,15 +931,42 @@
       return Boolean(booking && booking.status === "Disetujui" && hasBookingEnded(booking));
     }
 
+    function renderMobileDashboard() {
+      const agenda = document.getElementById("mobileAgenda");
+      const mobileActivity = document.getElementById("mobileActivityList");
+      if (!agenda || !mobileActivity) return;
+
+      const todayValue = dateKey(today);
+      const upcoming = state.bookings
+        .filter((booking) => booking.date >= todayValue && ["Ditolak", "Dikembalikan"].indexOf(booking.status) === -1)
+        .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))
+        .slice(0, 4);
+
+      const agendaItems = upcoming.length
+        ? upcoming.map((booking) => {
+            const dateParts = formatDate(booking.date).split(" ");
+            return '<div class="agenda-item"><div class="agenda-date"><strong>' + escapeHTML(dateParts[0]) + '</strong><small>' + escapeHTML(dateParts[1] || "") + '</small></div><div class="agenda-copy"><strong>' + escapeHTML(booking.roomName) + '</strong><span>' + escapeHTML(booking.start + "–" + booking.end) + ' · ' + escapeHTML(booking.purpose || "Peminjaman ruangan") + '</span></div><span class="status-pill ' + statusClass(booking.status) + '">' + escapeHTML(booking.status) + '</span></div>';
+          }).join("")
+        : '<div class="social-empty"><i class="bi bi-calendar2-x"></i><p>Belum ada agenda peminjaman.</p><button class="btn btn-brand w-100" type="button" data-page="booking">Ajukan peminjaman</button></div>';
+
+      agenda.innerHTML = '<div class="social-card-head"><div class="social-card-icon"><i class="bi bi-calendar2-week"></i></div><div><strong>Agenda terdekat</strong><small>Jadwal ruangan kamu</small></div></div><div class="agenda-list">' + agendaItems + '</div>';
+
+      mobileActivity.innerHTML = state.activities.length
+        ? state.activities.map((activity) => '<div class="activity"><div class="activity-icon ' + activity.type + '"><i class="bi ' + activity.icon + '"></i></div><div><p>' + escapeHTML(activity.text) + '</p><time>' + escapeHTML(activity.time) + "</time></div></div>").join("")
+        : '<div class="social-empty"><i class="bi bi-chat-square-heart"></i><p>Belum ada aktivitas terbaru.</p></div>';
+    }
+
     function renderDashboard() {
       const mine = state.bookings.filter((booking) => sameEmail(booking.email, state.user.email));
       document.getElementById("statRooms").textContent = state.rooms.filter((room) => isRoomAvailable(room.status)).length;
       document.getElementById("statBookings").textContent = mine.length;
       document.getElementById("statPending").textContent = mine.filter((booking) => booking.status === "Menunggu").length;
       document.getElementById("statApproved").textContent = mine.filter((booking) => booking.status === "Disetujui").length;
-      document.getElementById("activityList").innerHTML = state.activities.length
+      const activityMarkup = state.activities.length
         ? state.activities.map((activity) => '<div class="activity"><div class="activity-icon ' + activity.type + '"><i class="bi ' + activity.icon + '"></i></div><div><p>' + escapeHTML(activity.text) + '</p><time>' + escapeHTML(activity.time) + "</time></div></div>").join("")
         : '<div class="empty-state py-4"><i class="bi bi-clock-history"></i><p>Belum ada aktivitas.</p></div>';
+      document.getElementById("activityList").innerHTML = activityMarkup;
+      renderMobileDashboard();
       renderCalendar();
     }
 
