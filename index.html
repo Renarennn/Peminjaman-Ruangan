@@ -350,16 +350,20 @@
     }
     @media (max-width: 767.98px) {
       .sidebar { display: none; }
-      .main-area { margin-left: 0; padding-bottom: 70px; }
+      .main-area { margin-left: 0; padding-bottom: 86px; }
       .topbar { height: 68px; padding: 0 16px; }
-      .page-heading h1 { font-size: 16px; }
+      .page-heading h1 { font-size: 18px; }
       .page-heading p { display: none; }
       .top-actions { gap: 9px; }
       .profile-text { display: none; }
       .content { padding: 22px 16px 35px; }
       .hero { padding: 24px 21px; min-height: 205px; }
-      .hero h2 { font-size: 20px; max-width: 260px; }
-      .hero p { font-size: 11px; max-width: 260px; }
+      .hero h2 { font-size: 25px; max-width: 100%; }
+      .hero p { font-size: 13px; max-width: 100%; }
+      .section-title { font-size: 20px; }
+      .section-subtitle { font-size: 13px; }
+      .form-label { font-size: 13px; }
+      .form-control, .form-select { font-size: 14px; padding: 12px 13px; }
       .calendar-card, .activity-card, .booking-form-card { padding: 17px; }
       .approver-list { grid-template-columns: 1fr; }
       .booking-room-preview { align-items: flex-start; flex-wrap: wrap; }
@@ -375,11 +379,12 @@
         background: rgba(255,255,255,.96); border-top: 1px solid var(--line); justify-content: space-around;
         padding: 8px 7px; backdrop-filter: blur(12px);
       }
-      .mobile-bottom-nav button { border: 0; background: transparent; color: #9a9caf; font-size: 9px; font-weight: 700; display: grid; place-items: center; gap: 2px; min-width: 61px; }
-      .mobile-bottom-nav button i { font-size: 19px; }
+      .mobile-bottom-nav button { border: 0; background: transparent; color: #9a9caf; font-size: 11px; line-height: 1.2; font-weight: 700; display: grid; place-items: center; gap: 3px; min-width: 100px; flex: 0 0 100px; text-align: center; white-space: normal; }
+      .mobile-bottom-nav button i { font-size: 22px; }
       .mobile-bottom-nav button.active { color: var(--brand); }
       .mobile-bottom-nav { justify-content: flex-start; gap: 5px; overflow-x: auto; }
-      .mobile-bottom-nav button { flex: 0 0 72px; min-width: 72px; }
+      .mobile-bottom-nav { height: 82px; }
+      .mobile-bottom-nav button { flex: 0 0 100px; min-width: 100px; }
       .notification-panel { position: fixed; top: 61px; right: 12px; width: min(330px, calc(100vw - 24px)); }
     }
   </style>
@@ -576,15 +581,14 @@
           <div class="card-soft booking-form-card">
             <form id="bookingForm">
               <div class="booking-room-preview mb-4"><i id="bookingRoomIcon" class="bi bi-door-open"></i><div><strong id="bookingRoomName">Pilih ruangan</strong><small id="bookingRoomId">Belum ada ruangan dipilih</small></div><button class="btn-light-soft ms-auto" type="button" data-page="rooms">Ganti</button></div>
-              <div class="alert-soft mb-4"><i class="bi bi-info-circle me-1 text-primary"></i> Pengajuan akan dikirim kepada penyetuju yang kamu pilih dan juga terlihat oleh Admin.</div>
+              <div class="alert-soft mb-4"><i class="bi bi-info-circle me-1 text-primary"></i> Pengajuan otomatis dikirim ke semua Penyetuju aktif dan juga terlihat oleh Admin.</div>
               <div class="row g-3">
                 <div class="col-md-6"><label class="form-label" for="bookingName">Nama peminjam</label><input id="bookingName" class="form-control" type="text" required><div class="form-hint">Nama harus sama persis dengan data pendaftaran.</div></div>
                 <div class="col-md-6"><label class="form-label" for="bookingEmail">Email</label><input id="bookingEmail" class="form-control" type="email" readonly></div>
                 <div class="col-md-6"><label class="form-label" for="bookingDate">Tanggal</label><input id="bookingDate" class="form-control" type="date" required></div>
                 <div class="col-md-3"><label class="form-label" for="bookingStart">Waktu mulai</label><input id="bookingStart" class="form-control" type="time" required></div>
                 <div class="col-md-3"><label class="form-label" for="bookingEnd">Waktu selesai</label><input id="bookingEnd" class="form-control" type="time" required></div>
-                <div id="bookingApproverGroup" class="col-12"><label class="form-label">Penyetuju</label><div id="bookingApproverOptions" class="approver-list" role="radiogroup" aria-label="Pilih penyetuju"></div><div class="form-hint">Pilih salah satu penyetuju aktif.</div></div>
-                <div class="col-md-6"><label class="form-label" for="bookingParticipants">Jumlah peserta</label><input id="bookingParticipants" class="form-control" type="number" min="1" placeholder="Contoh: 12" required></div>
+                <div class="col-12"><div class="alert-soft"><i class="bi bi-people me-1 text-primary"></i> Semua Penyetuju aktif harus menyetujui sebelum peminjaman berstatus Disetujui.</div></div>
                 <div class="col-12"><label class="form-label" for="bookingPurpose">Tujuan kegiatan</label><textarea id="bookingPurpose" class="form-control" rows="3" placeholder="Jelaskan keperluan peminjaman ruangan..." required></textarea></div>
               </div>
               <div class="booking-actions d-flex justify-content-end gap-2 mt-4"><button class="btn-light-soft" type="button" data-page="dashboard">Batal</button><button class="btn btn-brand" type="submit">Kirim pengajuan <i class="bi bi-send ms-1"></i></button></div>
@@ -775,9 +779,11 @@
       const items = roleMenus[state.role] || [];
       const sideNav = document.getElementById("sideNav");
       const mobileNav = document.getElementById("mobileNav");
-      sideNav.innerHTML = items.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + '</span>' + (item.page === "approvals" && state.role !== "Pengguna" ? '<span class="badge rounded-pill text-bg-danger ms-auto">2</span>' : "") + "</button>").join("");
+      const approvalCount = state.bookings.filter((booking) => booking.status === "Menunggu" && (state.role === "Admin" || (booking.approverEmails || []).includes(state.user.email))).length;
+      const approvalBadge = approvalCount ? '<span class="badge rounded-pill text-bg-danger ms-auto">' + approvalCount + '</span>' : "";
+      sideNav.innerHTML = items.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + '</span>' + (item.page === "approvals" ? approvalBadge : "") + "</button>").join("");
       const mobileItems = items;
-      mobileNav.innerHTML = mobileItems.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label.split(" ")[0] + "</span></button>").join("");
+      mobileNav.innerHTML = mobileItems.map((item) => '<button type="button" data-page="' + item.page + '"><i class="bi ' + item.icon + '"></i><span>' + item.label + "</span></button>").join("");
       sideNav.querySelectorAll("[data-page], #sideNav button").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
       mobileNav.querySelectorAll("[data-page]").forEach((button) => button.addEventListener("click", () => setPage(button.dataset.page)));
       document.querySelectorAll("[data-page]").forEach((button) => button.classList.toggle("active", button.dataset.page === state.currentPage));
@@ -869,10 +875,6 @@
 
     function prepareBookingForm() {
       updateUserUI();
-      const approverGroup = document.getElementById("bookingApproverGroup");
-      const needsApprover = state.role !== "Admin";
-      if (approverGroup) approverGroup.classList.toggle("d-none", !needsApprover);
-      if (needsApprover) renderApprovers(state.approvers);
 
       const selectedId = document.getElementById("bookingRoomId").dataset.roomId;
       const room = state.rooms.find((item) => item.id === selectedId) || state.rooms.find((item) => isRoomAvailable(item.status));
@@ -905,9 +907,25 @@
     }
 
     function renderApprovals() {
-      const list = state.role === "Admin" ? state.bookings.filter((booking) => booking.status === "Menunggu") : state.bookings.filter((booking) => booking.status === "Menunggu" && booking.approverEmail === state.user.email);
+      const list = state.role === "Admin"
+        ? state.bookings.filter((booking) => booking.status === "Menunggu")
+        : state.bookings.filter((booking) => booking.status === "Menunggu" && (booking.approverEmails || []).includes(state.user.email));
       document.getElementById("approvalCount").textContent = list.length + " pengajuan";
-      document.getElementById("approvalList").innerHTML = list.length ? list.map((booking) => '<div class="col-lg-6"><div class="card-soft p-3 h-100"><div class="d-flex justify-content-between gap-2"><div><div class="eyebrow mb-1">' + escapeHTML(booking.id) + '</div><h3 class="section-title fs-6">' + escapeHTML(booking.roomName) + '</h3></div><span class="status-pill status-pending">Menunggu</span></div><div class="row g-2 mt-2 mb-3"><div class="col-6"><small class="text-secondary d-block">Peminjam</small><strong class="small">' + escapeHTML(booking.name) + '</strong></div><div class="col-6"><small class="text-secondary d-block">Tanggal</small><strong class="small">' + formatDate(booking.date) + '</strong></div><div class="col-6"><small class="text-secondary d-block">Waktu</small><strong class="small">' + booking.start + "–" + booking.end + '</strong></div><div class="col-6"><small class="text-secondary d-block">Peserta</small><strong class="small">' + booking.participants + " orang</strong></div></div><div class=\"alert-soft mb-3\">" + escapeHTML(booking.purpose) + '</div><div class="d-flex gap-2"><button class="btn btn-light-soft flex-fill" type="button" data-reject-booking="' + booking.id + '">Tolak</button><button class="btn btn-brand flex-fill" type="button" data-approve-booking="' + booking.id + '">Setujui</button></div></div></div>').join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-check2-circle"></i><p>Tidak ada pengajuan yang menunggu persetujuan.</p></div></div>';
+      document.getElementById("approvalList").innerHTML = list.length ? list.map((booking) => {
+        const approvers = booking.approverEmails || [];
+        let approvalState = {};
+        try { approvalState = JSON.parse(booking.approvalState || "{}") || {}; } catch (error) { approvalState = {}; }
+        const approvedCount = approvers.filter((email) => approvalState[email] === "Disetujui").length;
+        const alreadyApproved = state.role !== "Admin" && approvalState[state.user.email] === "Disetujui";
+        const approvalLabel = alreadyApproved ? "Sudah menyetujui" : "Setujui";
+        const rejectButton = alreadyApproved
+          ? '<button class="btn btn-light-soft flex-fill" type="button" disabled>Tersimpan</button>'
+          : '<button class="btn btn-light-soft flex-fill" type="button" data-reject-booking="' + escapeHTML(booking.id) + '">Tolak</button>';
+        const approvalButton = alreadyApproved
+          ? '<button class="btn btn-light-soft flex-fill" type="button" disabled>' + approvalLabel + '</button>'
+          : '<button class="btn btn-brand flex-fill" type="button" data-approve-booking="' + escapeHTML(booking.id) + '">' + approvalLabel + '</button>';
+        return '<div class="col-lg-6"><div class="card-soft p-3 h-100"><div class="d-flex justify-content-between gap-2"><div><div class="eyebrow mb-1">' + escapeHTML(booking.id) + '</div><h3 class="section-title fs-6">' + escapeHTML(booking.roomName) + '</h3></div><span class="status-pill status-pending">Menunggu</span></div><div class="row g-2 mt-2 mb-3"><div class="col-6"><small class="text-secondary d-block">Peminjam</small><strong class="small">' + escapeHTML(booking.name) + '</strong></div><div class="col-6"><small class="text-secondary d-block">Tanggal</small><strong class="small">' + formatDate(booking.date) + '</strong></div><div class="col-6"><small class="text-secondary d-block">Waktu</small><strong class="small">' + booking.start + "–" + booking.end + '</strong></div><div class="col-12"><small class="text-secondary d-block">Progres persetujuan</small><strong class="small">' + approvedCount + " dari " + approvers.length + ' Penyetuju sudah menyetujui</strong></div></div><div class="alert-soft mb-3">' + escapeHTML(booking.purpose) + '</div><div class="d-flex gap-2">' + rejectButton + approvalButton + '</div></div></div>';
+      }).join("") : '<div class="col-12"><div class="card-soft empty-state"><i class="bi bi-check2-circle"></i><p>Tidak ada pengajuan yang menunggu persetujuan.</p></div></div>';
       document.querySelectorAll("[data-approve-booking]").forEach((button) => button.addEventListener("click", () => changeBookingStatus(button.dataset.approveBooking, "Disetujui")));
       document.querySelectorAll("[data-reject-booking]").forEach((button) => button.addEventListener("click", () => changeBookingStatus(button.dataset.rejectBooking, "Ditolak")));
     }
@@ -1126,30 +1144,13 @@
         purpose: booking.Tujuan,
         participants: booking.JumlahPeserta,
         approverEmail: booking.PenyetujuEmail,
+        approverEmails: String(booking.PenyetujuEmail || "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean),
         approver: booking.PenyetujuNama,
+        approvalState: booking.StatusPersetujuan || "",
         status: booking.Status,
         note: booking.CatatanPenyetuju,
         submitted: booking.TanggalPengajuan
       };
-    }
-
-    function renderApprovers(approvers) {
-      const container = document.getElementById("bookingApproverOptions");
-      if (!container) return;
-      const list = Array.isArray(approvers) ? approvers : [];
-      const selected = container.querySelector('input[name="bookingApprover"]:checked');
-      const selectedValue = selected ? selected.value : "";
-
-      if (!list.length) {
-        container.innerHTML = '<div class="alert-soft">Belum ada penyetuju aktif.</div>';
-        return;
-      }
-
-      container.innerHTML = list.map(function(user) {
-        const value = String(user.Email || "") + "|" + String(user.Nama || "");
-        const checked = value === selectedValue ? " checked" : "";
-        return '<label class="approver-option"><input class="approver-radio" type="radio" name="bookingApprover" value="' + escapeHTML(value) + '"' + checked + ' required><span class="approver-card"><span class="approver-avatar">' + escapeHTML(initials(user.Nama)) + '</span><span class="approver-copy"><strong>' + escapeHTML(user.Nama) + '</strong><small>' + escapeHTML(user.Email) + '</small></span><i class="bi bi-check-circle-fill approver-check"></i></span></label>';
-      }).join("");
     }
 
     function showLiveRegistration(email) {
@@ -1187,7 +1188,6 @@
       state.bookings = Array.isArray(data.bookings) ? data.bookings.map(mapLiveBooking) : [];
       state.notifications = Array.isArray(data.notifications) ? data.notifications : [];
       state.approvers = Array.isArray(data.approvers) ? data.approvers : [];
-      renderApprovers(state.approvers);
       if (Array.isArray(data.users)) {
         state.users = data.users.map(function(user) {
           return {
@@ -1341,8 +1341,7 @@
       const date = document.getElementById("bookingDate").value;
       const start = document.getElementById("bookingStart").value;
       const end = document.getElementById("bookingEnd").value;
-      const selectedApprover = document.querySelector('input[name="bookingApprover"]:checked');
-      const approverValue = selectedApprover ? selectedApprover.value : "";
+
       if (name.toLowerCase() !== state.user.name.toLowerCase()) {
         showToast("Nama harus sama dengan nama saat mendaftar.", "Nama tidak sesuai", "danger");
         return;
@@ -1355,11 +1354,6 @@
         showToast("Waktu selesai harus lebih besar dari waktu mulai.", "Waktu tidak valid", "warning");
         return;
       }
-      if (state.role !== "Admin" && !approverValue) {
-        showToast("Pilih salah satu penyetuju.", "Penyetuju belum dipilih", "warning");
-        return;
-      }
-      const approverParts = approverValue ? approverValue.split("|") : ["", ""];
       if (isAppsScriptPage()) {
         const submitButton = event.target.querySelector('button[type="submit"]');
         submitButton.disabled = true;
@@ -1370,9 +1364,6 @@
           start: start,
           end: end,
           purpose: document.getElementById("bookingPurpose").value.trim(),
-          participants: Number(document.getElementById("bookingParticipants").value),
-          approverEmail: approverParts[0],
-          approverName: approverParts[1]
         }).then(function(result) {
           if (!result || result.ok === false) throw new Error((result && result.error) || "Pengajuan gagal disimpan.");
           event.target.reset();
@@ -1398,9 +1389,9 @@
         start,
         end,
         purpose: document.getElementById("bookingPurpose").value.trim(),
-        participants: Number(document.getElementById("bookingParticipants").value),
-        approverEmail: approverParts[0],
-        approver: approverParts[1],
+        participants: 0,
+        approverEmail: "",
+        approver: "",
         status: state.role === "Admin" ? "Disetujui" : "Menunggu",
         note: "",
         submitted: dateKey(today)
