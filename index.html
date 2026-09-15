@@ -348,7 +348,7 @@
       .main-area { margin-left: 220px; }
       .topbar, .content { padding-left: 25px; padding-right: 25px; }
     }
-    @media (max-width: 767.98px) {
+    @media (max-width: 1050px) {
       .sidebar { display: none; }
       .main-area { margin-left: 0; padding-bottom: 86px; }
       .topbar { height: 68px; padding: 0 16px; }
@@ -388,7 +388,7 @@
       .notification-panel { position: fixed; top: 61px; right: 12px; width: min(330px, calc(100vw - 24px)); }
     }
   
-    @media (max-width: 767.98px) {
+    @media (max-width: 1050px) {
       .main-area { padding-bottom: 90px; }
       .content { padding: 22px 14px 36px; }
       .topbar { padding: 0 14px; }
@@ -402,6 +402,9 @@
       .mobile-bottom-nav button { flex: 0 0 108px; min-width: 108px; font-size: 12px; }
       .mobile-bottom-nav button i { font-size: 24px; }
     }
+
+    .return-countdown { display: inline-flex; align-items: center; color: #c17d10; background: #fff7e8; border-radius: 10px; padding: 6px 9px; font-size: 10px; font-weight: 700; line-height: 1.35; }
+    .return-countdown i { flex: 0 0 auto; }
 </style>
 </head>
 
@@ -616,7 +619,7 @@
 
         <section id="page-my-bookings" class="page">
           <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
-            <div><div class="eyebrow">Riwayat kamu</div><h2 class="section-title mt-1">Peminjaman Saya</h2><p class="section-subtitle">Pantau semua pengajuan peminjaman ruangan.</p></div>
+            <div><div class="eyebrow">Riwayat kamu</div><h2 class="section-title mt-1">Peminjaman Saya</h2><p class="section-subtitle">Riwayat tetap tersimpan di sini. Countdown dan tombol pengembalian muncul pada kolom aksi.</p></div>
             <button class="btn btn-brand" type="button" data-page="booking"><i class="bi bi-plus-lg me-1"></i>Pengajuan baru</button>
           </div>
           <div class="card-soft table-card"><table class="table"><thead><tr><th>ID</th><th>Ruangan</th><th>Tanggal & waktu</th><th>Penyetuju</th><th>Status</th><th></th></tr></thead><tbody id="myBookingsTable"></tbody></table></div>
@@ -924,12 +927,51 @@
       updateUserUI();
     }
 
+    function returnCountdownText(booking) {
+      const endDate = bookingEndDate(booking);
+      if (!endDate) return "Waktu pengembalian belum tersedia";
+      const remaining = endDate.getTime() - Date.now();
+      if (remaining <= 0) return "Sudah selesai — silakan kembalikan ruangan";
+
+      let seconds = Math.floor(remaining / 1000);
+      const days = Math.floor(seconds / 86400);
+      seconds %= 86400;
+      const hours = Math.floor(seconds / 3600);
+      seconds %= 3600;
+      const minutes = Math.floor(seconds / 60);
+      seconds %= 60;
+      const parts = [];
+      if (days) parts.push(days + " hari");
+      if (hours || days) parts.push(hours + " jam");
+      if (minutes || hours || days) parts.push(minutes + " menit");
+      parts.push(seconds + " detik");
+      return "Kembali dalam " + parts.join(" ");
+    }
+
+    function updateReturnCountdowns() {
+      let shouldRefresh = false;
+      document.querySelectorAll("[data-countdown-booking]").forEach((element) => {
+        const booking = state.bookings.find((item) => item.id === element.dataset.countdownBooking);
+        if (!booking) return;
+        if (canReturnBooking(booking)) {
+          shouldRefresh = true;
+          return;
+        }
+        const label = element.querySelector(".countdown-text");
+        if (label) label.textContent = returnCountdownText(booking);
+      });
+      if (shouldRefresh && state.currentPage === "my-bookings") renderMyBookings();
+    }
+
     function bookingRow(booking, showOwner = false) {
-      const owner = showOwner ? '<div><strong>' + escapeHTML(booking.name) + '</strong><small class="d-block text-secondary">' + escapeHTML(booking.email) + "</small></div>" : "";
-      const returnButton = !showOwner && canReturnBooking(booking)
-        ? '<button class="btn btn-light-soft return-btn py-1 px-2" type="button" data-return-booking="' + escapeHTML(booking.id) + '"><i class="bi bi-arrow-return-left me-1"></i><span>Kembalikan ruangan</span></button>'
-        : "";
-      return "<tr><td><strong>" + escapeHTML(booking.id) + "</strong></td><td>" + (showOwner ? owner : escapeHTML(booking.roomName)) + "</td><td>" + (showOwner ? escapeHTML(booking.roomName) : formatDate(booking.date) + '<small class="d-block text-secondary">' + booking.start + "–" + booking.end + "</small>") + "</td><td>" + escapeHTML(booking.approver) + '</td><td><span class="status-pill ' + statusClass(booking.status) + '">' + escapeHTML(booking.status) + "</span></td><td><div class=\"booking-row-actions\"><button class=\"btn btn-light-soft py-1 px-2\" type=\"button\" data-view-booking=\"" + escapeHTML(booking.id) + "\"><i class=\"bi bi-eye\"></i></button>" + returnButton + "</div></td></tr>";
+      const owner = showOwner ? '<div><strong>' + escapeHTML(booking.name) + '</strong><small class="d-block text-secondary">' + escapeHTML(booking.email) + '</small></div>' : "";
+      let returnAction = "";
+      if (!showOwner && booking.status === "Disetujui") {
+        returnAction = canReturnBooking(booking)
+          ? '<button class="btn btn-light-soft return-btn py-1 px-2" type="button" data-return-booking="' + escapeHTML(booking.id) + '"><i class="bi bi-arrow-return-left me-1"></i><span>Kembalikan ruangan</span></button>'
+          : '<span class="return-countdown" data-countdown-booking="' + escapeHTML(booking.id) + '"><i class="bi bi-hourglass-split me-1"></i><span class="countdown-text">' + escapeHTML(returnCountdownText(booking)) + '</span></span>';
+      }
+      return '<tr><td><strong>' + escapeHTML(booking.id) + '</strong></td><td>' + (showOwner ? owner : escapeHTML(booking.roomName)) + '</td><td>' + (showOwner ? escapeHTML(booking.roomName) : formatDate(booking.date) + '<small class="d-block text-secondary">' + booking.start + '–' + booking.end + '</small>') + '</td><td>' + escapeHTML(booking.approver) + '<small class="d-block text-secondary">' + (showOwner ? "" : escapeHTML(booking.purpose)) + '</small></td><td><span class="status-pill ' + statusClass(booking.status) + '">' + escapeHTML(booking.status) + '</span></td><td><div class="booking-row-actions"><button class="btn btn-light-soft py-1 px-2" type="button" data-view-booking="' + escapeHTML(booking.id) + '"><i class="bi bi-eye"></i></button>' + returnAction + '</div></td></tr>';
     }
 
     function renderMyBookings() {
@@ -937,6 +979,7 @@
       document.getElementById("myBookingsTable").innerHTML = mine.length ? mine.map((booking) => bookingRow(booking)).join("") : '<tr><td colspan="6"><div class="empty-state"><i class="bi bi-calendar-x"></i><p>Belum ada pengajuan peminjaman.</p></div></td></tr>';
       bindBookingViewButtons();
       bindReturnBookingButtons();
+      updateReturnCountdowns();
     }
 
     function renderApprovals() {
@@ -990,12 +1033,13 @@
         ? users.map((user) => '<tr><td><strong>' + escapeHTML(user.name) + '</strong></td><td>' + escapeHTML(user.email) + '</td><td>' + escapeHTML(user.dept) + '</td><td>' + escapeHTML(user.role) + '</td><td><span class="status-pill ' + statusClass(user.status) + '">' + escapeHTML(user.status) + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-action="' + user.email + '"><i class="bi bi-three-dots"></i></button></td></tr>').join("")
         : '<tr><td colspan="6"><div class="empty-state py-3"><p>Belum ada data pengguna.</p></div></td></tr>';
       document.getElementById("adminRoomsTable").innerHTML = state.rooms.length
-        ? state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + statusClass(room.status) + '">' + (isRoomAvailable(room.status) ? "Aktif" : "Nonaktif") + '</span></td><td><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '"><i class="bi bi-pencil"></i></button></td></tr>').join("")
+        ? state.rooms.map((room) => '<tr><td><strong>' + room.id + '</strong></td><td>' + escapeHTML(room.name) + '</td><td>' + escapeHTML(room.desc) + '</td><td><span class="status-pill ' + statusClass(room.status) + '">' + (isRoomAvailable(room.status) ? "Aktif" : "Nonaktif") + '</span></td><td><div class="booking-row-actions"><button class="btn btn-light-soft py-1 px-2" type="button" data-admin-room="' + room.id + '" title="Ubah ruangan"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger py-1 px-2" type="button" data-admin-delete-room="' + room.id + '" title="Hapus ruangan"><i class="bi bi-trash"></i></button></div></td></tr>').join("")
         : '<tr><td colspan="5"><div class="empty-state py-3"><p>Belum ada data ruangan.</p></div></td></tr>';
       document.getElementById("allBookingsTable").innerHTML = state.bookings.map((booking) => bookingRow(booking, true)).join("");
       bindBookingViewButtons();
       document.querySelectorAll("[data-admin-action]").forEach((button) => button.addEventListener("click", () => openAdminUserEditor(button.dataset.adminAction)));
       document.querySelectorAll("[data-admin-room]").forEach((button) => button.addEventListener("click", () => openAdminRoomEditor(button.dataset.adminRoom)));
+      document.querySelectorAll("[data-admin-delete-room]").forEach((button) => button.addEventListener("click", () => deleteAdminRoom(button.dataset.adminDeleteRoom, button)));
     }
 
     function openAdminUserEditor(email) {
@@ -1067,6 +1111,29 @@
         showToast(error.message || "Data pengguna belum tersimpan.", "Gagal menyimpan", "danger");
       } finally {
         button.disabled = false;
+      }
+    }
+
+    async function deleteAdminRoom(id, button) {
+      const room = state.rooms.find((item) => item.id === id);
+      if (!room || !window.confirm("Hapus ruangan " + room.name + "?")) return;
+
+      if (button) button.disabled = true;
+      try {
+        if (isAppsScriptPage()) {
+          const result = await callServer("deleteRoom", { id: id });
+          if (!result || result.ok === false) throw new Error((result && result.error) || "Ruangan belum dapat dihapus.");
+          await syncData();
+          showToast(result.message || "Ruangan berhasil dihapus.", "Ruangan dihapus", "success");
+        } else {
+          state.rooms = state.rooms.filter((item) => item.id !== id);
+          renderAll();
+          showToast("Ruangan " + room.name + " berhasil dihapus.", "Ruangan dihapus", "success");
+        }
+      } catch (error) {
+        showToast(error.message || "Ruangan belum dapat dihapus.", "Gagal menghapus", "danger");
+      } finally {
+        if (button) button.disabled = false;
       }
     }
 
@@ -1493,6 +1560,7 @@
     renderAll();
     loadLiveSession();
     setInterval(syncData, CONFIG.POLL_MS);
+    setInterval(updateReturnCountdowns, 1000);
   </script>
 </body>
 </html>
