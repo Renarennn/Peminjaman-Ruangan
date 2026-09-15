@@ -686,8 +686,18 @@ function ensureHeaders_(sheet, headers) {
   const lastColumn = Math.max(sheet.getLastColumn(), headers.length, 1);
   const existing = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(clean_);
 
-  headers.forEach(function(header) {
-    if (existing.indexOf(header) !== -1) return;
+  headers.forEach(function(header, desiredIndex) {
+    const foundIndex = existing.indexOf(header);
+
+    if (foundIndex !== -1) {
+      if (foundIndex !== desiredIndex && !existing[desiredIndex]) {
+        sheet.getRange(1, desiredIndex + 1).setValue(header);
+        sheet.getRange(1, foundIndex + 1).clearContent();
+        existing[desiredIndex] = header;
+        existing[foundIndex] = "";
+      }
+      return;
+    }
 
     let emptyIndex = existing.indexOf("");
     if (emptyIndex === -1) {
