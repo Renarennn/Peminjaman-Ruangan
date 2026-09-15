@@ -568,6 +568,33 @@ function saveRoom(data) {
   return { ok: true, message: "Ruangan baru ditambahkan." };
 }
 
+function deleteRoom(data) {
+  requireAdmin_();
+
+  const id = clean_(data && data.id);
+  if (!id) throw new Error("ID ruangan tidak valid.");
+
+  const sheet = getSheet_(APP_CONFIG.SHEETS.ROOMS);
+  const values = sheet.getDataRange().getValues();
+
+  for (let row = 1; row < values.length; row += 1) {
+    if (String(values[row][0]).trim() !== id) continue;
+
+    const inUse = readBookings_().some(function(item) {
+      return item.IDRuangan === id &&
+        ["Menunggu", "Disetujui"].indexOf(item.Status) !== -1;
+    });
+    if (inUse) {
+      throw new Error("Ruangan masih memiliki peminjaman aktif atau menunggu persetujuan.");
+    }
+
+    sheet.deleteRow(row + 1);
+    return { ok: true, message: "Ruangan " + id + " berhasil dihapus." };
+  }
+
+  throw new Error("Ruangan tidak ditemukan.");
+}
+
 function markNotificationsRead() {
   const email = getActiveEmail_();
   PropertiesService.getUserProperties().setProperty("NOTIFICATIONS_READ_" + email, new Date().toISOString());
@@ -605,6 +632,8 @@ function routePost_(data) {
       return setUserStatus(data);
     case "saveRoom":
       return saveRoom(data);
+    case "deleteRoom":
+      return deleteRoom(data);
     case "markNotificationsRead":
       return markNotificationsRead();
     default:
