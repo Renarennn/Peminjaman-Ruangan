@@ -131,8 +131,8 @@ function getBootstrap() {
   const bookings = readBookings_();
   const visibleBookings = bookings.filter(function(booking) {
     return user.Role === "Admin" ||
-      booking.EmailPeminjam === email ||
-      approverEmails_(booking).indexOf(email) !== -1 ||
+      normalize_(booking.EmailPeminjam) === normalize_(email) ||
+      approverEmails_(booking).indexOf(normalize_(email)) !== -1 ||
       booking.Status === "Disetujui";
   });
 
@@ -202,7 +202,7 @@ function createBooking(data) {
   const start = clean_(data && (data.start || data.timeStart));
   const end = clean_(data && (data.end || data.timeEnd));
   const purpose = clean_(data && data.purpose);
-  const participants = Number(data && data.participants) || 0;
+  const participants = 0;
 
   if (normalize_(name) !== normalize_(user.Nama)) {
     throw new Error("Nama saat meminjam harus sama dengan nama saat mendaftar.");
@@ -233,7 +233,7 @@ function createBooking(data) {
 
   const approverEmails = user.Role === "Admin"
     ? []
-    : activeApprovers.map(function(item) { return item.Email; });
+    : activeApprovers.map(function(item) { return item.Email.toLowerCase(); });
   const approverNames = user.Role === "Admin"
     ? []
     : activeApprovers.map(function(item) { return item.Nama; });
@@ -412,7 +412,7 @@ function returnBooking(data) {
   }
 
   if (!booking) throw new Error("Data peminjaman tidak ditemukan.");
-  if (user.Role !== "Admin" && booking.EmailPeminjam !== email) {
+  if (user.Role !== "Admin" && normalize_(booking.EmailPeminjam) !== normalize_(email)) {
     throw new Error("Kamu tidak memiliki izin untuk mengembalikan ruangan ini.");
   }
   if (booking.Status !== "Disetujui") {
@@ -448,6 +448,56 @@ function bookingEndDate_(booking) {
   }
 }
 
+function addUser(data) {
+  const admin = requireAdmin_();
+  const email = clean_(data && data.email).toLowerCase();
+  const name = clean_(data && data.name);
+  const dept = clean_(data && data.dept) || "-";
+  const role = clean_(data && data.role) || "Pengguna";
+  const status = clean_(data && data.status) || (role === "Pengguna" ? "Aktif" : "Menunggu");
+
+  const atPosition = email.indexOf("@");
+  const dotPosition = email.lastIndexOf(".");
+  if (!email || atPosition <= 0 || dotPosition <= atPosition + 1 || dotPosition >= email.length - 1) {
+    throw new Error("Email tidak valid.");
+  }
+  if (!name) throw new Error("Nama lengkap wajib diisi.");
+  if (APP_CONFIG.ROLES.indexOf(role) === -1) throw new Error("Peran pengguna tidak valid.");
+  if (APP_CONFIG.USER_STATUSES.indexOf(status) === -1) throw new Error("Status pengguna tidak valid.");
+  if (findUserByEmail_(email)) throw new Error("Email tersebut sudah terdaftar.");
+
+  if (status === "Aktif" && role === "Penyetuju") {
+    const activeApprovers = readUsers_().filter(function(item) {
+      return item.Role === "Penyetuju" && item.Status === "Aktif";
+    });
+    if (activeApprovers.length >= 2) throw new Error("Maksimal hanya 2 Penyetuju aktif.");
+  }
+
+  const newUser = {
+    Email: email,
+    Nama: name,
+    Role: role,
+    Status: status,
+    TanggalDaftar: todayKey_(),
+    Dept: dept
+  };
+  getSheet_(APP_CONFIG.SHEETS.USERS).appendRow([
+    newUser.Email,
+    newUser.Nama,
+    newUser.Role,
+    newUser.Status,
+    new Date(),
+    newUser.Dept
+  ]);
+
+  return {
+    ok: true,
+    message: "Pengguna berhasil ditambahkan meskipun belum login.",
+    user: publicUser_(newUser),
+    admin: publicUser_(admin)
+  };
+}
+
 function setUserStatus(data) {
   const admin = requireAdmin_();
   const email = clean_(data && data.email);
@@ -464,7 +514,7 @@ function setUserStatus(data) {
 
   for (let row = 1; row < values.length; row += 1) {
     const item = userFromRow_(values[row], row + 1);
-    if (item.Email === email) {
+    if (normalize_(item.Email) === normalize_(email)) {
       rowNumber = row + 1;
       target = item;
       break;
@@ -549,6 +599,8 @@ function routePost_(data) {
       return setBookingStatus(data);
     case "returnBooking":
       return returnBooking(data);
+    case "addUser":
+      return addUser(data);
     case "setUserStatus":
       return setUserStatus(data);
     case "saveRoom":
@@ -704,45 +756,49 @@ function publicBooking_(booking) {
 
 function buildNotifications_(user, bookings) {
   const notifications = [];
+  const seen = {};
+
+  function add(item, icon, text) {
+    const key = item.ID + "|" + text;
+    if (seen[key]) return;
+    seen[key] = true;
+    notifications.push({
+      icon: icon,
+      text: text,
+      time: item.TanggalPengajuan,
+      read: false
+    });
+  }
 
   if (user.Role === "Admin") {
     bookings.filter(function(item) {
       return item.Status === "Menunggu";
     }).slice(-8).forEach(function(item) {
-      notifications.push({
-        icon: "bi-megaphone",
-        text: "Pengajuan baru " + item.ID + " dari " + item.NamaPeminjam + ".",
-        time: item.TanggalPengajuan,
-        read: false
-      });
+      add(item, "bi-megaphone", "Pengajuan baru " + item.ID + " dari " + item.NamaPeminjam + ".");
     });
   }
 
   if (user.Role === "Penyetuju") {
     bookings.filter(function(item) {
-      return item.Status === "Menunggu" && approverEmails_(item).indexOf(user.Email) !== -1;
+      return item.Status === "Menunggu" &&
+        approverEmails_(item).indexOf(normalize_(user.Email)) !== -1;
     }).slice(-8).forEach(function(item) {
-      notifications.push({
-        icon: "bi-clipboard-check",
-        text: "Ada pengajuan baru untuk " + item.NamaRuangan + ".",
-        time: item.TanggalPengajuan,
-        read: false
-      });
+      add(item, "bi-clipboard-check", "Ada pengajuan baru untuk " + item.NamaRuangan + ".");
     });
   }
 
-  if (user.Role === "Pengguna") {
-    bookings.filter(function(item) {
-      return item.EmailPeminjam === user.Email && item.Status !== "Menunggu";
-    }).slice(-8).forEach(function(item) {
-      notifications.push({
-        icon: item.Status === "Disetujui" ? "bi-check-circle" : "bi-x-circle",
-        text: "Pengajuan " + item.ID + " " + item.Status.toLowerCase() + ".",
-        time: item.TanggalPengajuan,
-        read: false
-      });
-    });
-  }
+  bookings.filter(function(item) {
+    return normalize_(item.EmailPeminjam) === normalize_(user.Email);
+  }).slice(-8).forEach(function(item) {
+    const icon = item.Status === "Disetujui"
+      ? "bi-check-circle"
+      : item.Status === "Ditolak"
+        ? "bi-x-circle"
+        : item.Status === "Dikembalikan"
+          ? "bi-arrow-return-left"
+          : "bi-hourglass-split";
+    add(item, icon, "Pengajuan " + item.ID + " " + item.Status.toLowerCase() + ".");
+  });
 
   return notifications.reverse();
 }
@@ -750,7 +806,7 @@ function buildNotifications_(user, bookings) {
 function approverEmails_(booking) {
   return clean_(booking && booking.PenyetujuEmail)
     .split(",")
-    .map(function(email) { return clean_(email); })
+    .map(function(email) { return clean_(email).toLowerCase(); })
     .filter(Boolean);
 }
 
