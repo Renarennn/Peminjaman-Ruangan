@@ -575,6 +575,56 @@
       #roomGrid .room-meta span { font-size: 9px; }
       #roomGrid .room-meta .btn { font-size: 11px; min-height: 38px; }
     }
+
+    /* Extra sizing for a real phone, including Android Desktop Site mode */
+    html.phone-device body { font-size: 18px; }
+    @media (max-width: 1050px) {
+      html.phone-device .topbar { min-height: calc(72px + env(safe-area-inset-top)); padding-inline: 16px; }
+      html.phone-device .page-heading h1 { font-size: 22px; }
+      html.phone-device .mobile-menu-btn { width: 52px; height: 52px; font-size: 31px; border-radius: 16px; }
+      html.phone-device .sidebar { width: min(390px, 88vw); padding-inline: 20px; }
+      html.phone-device .brand { font-size: 20px; gap: 14px; padding: 0 8px 34px; }
+      html.phone-device .brand .brand-mark { width: 50px; height: 50px; border-radius: 16px; font-size: 24px; }
+      html.phone-device .nav-label { font-size: 13px; padding: 15px 12px 10px; }
+      html.phone-device .side-nav { gap: 8px; }
+      html.phone-device .side-nav button { padding: 17px 16px; border-radius: 16px; gap: 16px; font-size: 17px; }
+      html.phone-device .side-nav button i { width: 28px; font-size: 24px; }
+      html.phone-device .mini-help { padding: 20px; border-radius: 20px; margin: 16px 0 22px; }
+      html.phone-device .mini-help strong { font-size: 17px !important; }
+      html.phone-device .mini-help small { font-size: 13px; }
+      html.phone-device .mini-help .btn { min-height: 50px; font-size: 15px; }
+      html.phone-device .content { padding-inline: 16px; }
+      html.phone-device .hero { padding: 30px 24px 26px; border-radius: 24px; }
+      html.phone-device .hero h2 { font-size: 32px; }
+      html.phone-device .hero p { font-size: 16px; }
+      html.phone-device .hero .btn { min-height: 54px; font-size: 16px; }
+      html.phone-device #dashboardStats { gap: 14px !important; }
+      html.phone-device .stat-card { min-height: 132px; padding: 24px; border-radius: 22px; }
+      html.phone-device .stat-card .stat-icon { width: 52px; height: 52px; font-size: 24px; }
+      html.phone-device .stat-card h3 { font-size: 36px; }
+      html.phone-device .stat-card p { font-size: 16px; }
+      html.phone-device .stat-card .trend { font-size: 13px; }
+      html.phone-device .mobile-social-card { padding: 23px 20px; border-radius: 24px; }
+      html.phone-device .social-card-head strong { font-size: 18px; }
+      html.phone-device .social-card-head small { font-size: 14px; }
+      html.phone-device .social-card-icon { width: 54px; height: 54px; font-size: 25px; }
+      html.phone-device .agenda-copy strong { font-size: 16px; }
+      html.phone-device .agenda-copy span { font-size: 13px; }
+      html.phone-device .agenda-item .status-pill { font-size: 11px; }
+      html.phone-device #roomGrid { grid-template-columns: repeat(auto-fit, minmax(clamp(155px, 42vw, 250px), 1fr)); gap: 12px; }
+      html.phone-device #roomGrid .room-cover { height: clamp(102px, 20vw, 145px); }
+      html.phone-device #roomGrid .room-body { padding: 15px; }
+      html.phone-device #roomGrid .room-body h3 { font-size: 15px; }
+      html.phone-device #roomGrid .room-body p { font-size: 12px; }
+      html.phone-device #roomGrid .room-meta span { font-size: 11px; }
+      html.phone-device #roomGrid .room-meta .btn { min-height: 44px; font-size: 13px; }
+      html.phone-device .section-title { font-size: 24px; }
+      html.phone-device .section-subtitle { font-size: 15px; }
+      html.phone-device .form-label { font-size: 15px; }
+      html.phone-device .form-control, html.phone-device .form-select, html.phone-device textarea.form-control { font-size: 16px !important; min-height: 52px; }
+      html.phone-device .btn { font-size: 15px; min-height: 46px; }
+      html.phone-device .table-card .table { min-width: 720px; }
+    }
 </style>
 </head>
 
@@ -1659,6 +1709,7 @@
     });
     document.getElementById("mobileMenuOverlay").addEventListener("click", closeMobileMenu);
     window.addEventListener("resize", () => {
+      applyDeviceLayout();
       if (window.innerWidth > 1050) closeMobileMenu();
     });
     document.getElementById("notificationBtn").addEventListener("click", (event) => {
@@ -1801,6 +1852,14 @@
 
     renderAll();
     loadLiveSession();
+    function applyDeviceLayout() {
+      const hasTouch = typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
+      const smallPhysicalScreen = typeof screen !== "undefined" && Math.min(screen.width, screen.height) <= 1000;
+      const narrowViewport = typeof window !== "undefined" && window.innerWidth <= 600;
+      document.documentElement.classList.toggle("phone-device", Boolean(narrowViewport || (hasTouch && smallPhysicalScreen)));
+    }
+
+    applyDeviceLayout();
     setInterval(syncData, CONFIG.POLL_MS);
     setInterval(updateReturnCountdowns, 1000);
   </script>
